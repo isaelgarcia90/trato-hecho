@@ -7,25 +7,48 @@
   <title>Chat · Trato Hecho</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="chat-page">
   <div class="phone">
     <header class="chat-head">
-      <a class="back" href="/#negocios" aria-label="Volver a los negocios">‹</a>
+      <a class="back" href="/#explorar" aria-label="Volver">‹</a>
       <div class="avatar" id="avatar">🤝</div>
-      <div class="who"><b id="biz">Trato Hecho</b><small id="agent">Clarito · en línea</small></div>
-      <span id="mode" class="badge"></span>
+      <div class="who" id="who" role="button" tabindex="0" aria-label="Ver información del negocio">
+        <b id="biz">Trato Hecho</b><small id="agent">Clarito · en línea</small>
+      </div>
+      <span id="mode" class="badge" hidden></span>
+      <button class="icon-btn" id="info-btn" aria-label="Información del negocio">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
     </header>
     <div id="msgs" class="msgs" aria-live="polite">
       <div class="day">Hoy</div>
-      <div class="intro" id="intro">🔒 Los cobros de este chat se hacen con CoDi: el dinero va directo de tu banco al negocio.</div>
+      <div class="secure">🔒 Pagos con CoDi: el dinero va directo de tu banco al negocio, sin comisión.</div>
     </div>
+    <div class="quick" id="quick" aria-label="Respuestas rápidas"></div>
     <form id="composer" class="composer">
-      <input id="input" autocomplete="off" placeholder="Escribe un mensaje" aria-label="Mensaje">
-      <button aria-label="Enviar">➤</button>
+      <label class="sr-only" for="input">Mensaje</label>
+      <input id="input" autocomplete="off" placeholder="Escribe un mensaje" maxlength="500">
+      <button aria-label="Enviar" id="send"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg></button>
     </form>
+
+    <div class="info-panel" id="info" aria-hidden="true">
+      <div class="sheet" role="dialog" aria-label="Información del negocio">
+        <div class="head"><span class="tile" id="i-tile"></span><div><h3 id="i-name"></h3><small id="i-cat"></small></div>
+          <button class="btn ghost sm close" id="info-close">Cerrar</button></div>
+        <p id="i-about"></p>
+        <div class="facts">
+          <div>📍 <span id="i-zone"></span></div>
+          <div>🕒 <span id="i-hours"></span></div>
+          <div>💳 <span id="i-pay"></span></div>
+        </div>
+        <h4>Precios</h4>
+        <div id="i-menu"></div>
+        <div class="pay-note">Los precios los fija el negocio. Pagas con CoDi desde la app de tu banco: sin tarjeta y sin comisión.</div>
+      </div>
+    </div>
   </div>
 <script>
 const $msgs = document.getElementById('msgs');
@@ -33,9 +56,7 @@ const $input = document.getElementById('input');
 const typing = document.createElement('div');
 typing.className = 'typing';
 typing.innerHTML = '<i></i><i></i><i></i>';
-let job = null;
-let busy = false;
-let pendingEl = null;
+let job = null, biz = null, busy = false, pendingEl = null;
 const seen = new Set();
 const payCards = new Map();
 
@@ -46,36 +67,28 @@ const store = {
 const money = n => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = ts => new Date(ts).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-
-function scroll() { requestAnimationFrame(() => { $msgs.scrollTop = $msgs.scrollHeight; }); }
-function setTyping(on) {
-  if (on) $msgs.appendChild(typing);
-  typing.classList.toggle('on', on);
-  scroll();
-}
+const scroll = () => requestAnimationFrame(() => { $msgs.scrollTop = $msgs.scrollHeight; });
+function setTyping(on) { if (on) $msgs.appendChild(typing); typing.classList.toggle('on', on); scroll(); }
 
 function receipt(q) {
   const box = el('div', 'receipt');
   const head = el('div', 'rh');
-  head.append(el('span', '', '🧾 Cotización'), el('span', '', 'Precio fijo'));
-  box.appendChild(head);
+  head.append(el('span', '', 'Cotización'), el('span', '', 'Precio fijo'));
+  box.append(head);
   for (const l of q.lines) {
     const row = el('div', 'line');
     row.append(el('span', '', (l.quantity > 1 ? l.quantity + ' × ' : '') + l.concept), el('span', '', money(l.amount)));
-    box.appendChild(row);
+    box.append(row);
   }
-  if (q.slot) box.appendChild(el('div', 'when', (q.slotLabel === 'Entrega' ? '📦 Entrega: ' : '📅 Cita: ') + q.slot));
+  if (q.slot) box.append(el('div', 'when', (q.slotLabel === 'Entrega' ? '📦 Entrega: ' : '📅 Cita: ') + q.slot));
   const total = el('div', 'total');
   total.append(el('span', '', 'Total'), el('span', '', money(q.total)));
-  box.appendChild(total);
+  box.append(total);
   const due = el('div', 'due');
-  if (q.chargeKind === 'anticipo') {
-    due.append('Para apartar pagas hoy un anticipo del ' + q.depositPercent + '%: ', el('b', '', money(q.deposit)), '. El resto, al terminar.');
-  } else {
-    due.append('A pagar: ', el('b', '', money(q.total)));
-  }
-  box.appendChild(due);
-  box.appendChild(el('div', 'fine', 'Con CoDi, sin comisión.' + (q.demoAmount != null ? ' Demo: se cobra ' + money(q.demoAmount) + '.' : '')));
+  if (q.chargeKind === 'anticipo') due.append(`Anticipo para apartar (${q.depositPercent}%): `, el('b', '', money(q.deposit)), '. El resto, al terminar.');
+  else due.append('A pagar: ', el('b', '', money(q.total)));
+  box.append(due);
+  box.append(el('div', 'fine', 'Con CoDi, sin comisión.' + (q.demoAmount != null ? ` Cobro de prueba: ${money(q.demoAmount)}.` : '')));
   return box;
 }
 
@@ -90,7 +103,7 @@ function payCard(m) {
     box.append(img);
   }
   box.append(el('div', 'state', 'Esperando tu pago'));
-  box.append(el('div', 'codi', m.method === 'push' ? '📲 Revisa las notificaciones de la app de tu banco.' : '📷 Ábrelo desde la app de tu banco › CoDi › Escanear.'));
+  box.append(el('div', 'hint', m.method === 'push' ? 'Revisa las notificaciones de la app de tu banco.' : 'App de tu banco › CoDi › Escanear.'));
   payCards.set(m.chargeId, box);
   return box;
 }
@@ -108,43 +121,41 @@ function render(m) {
   seen.add(m.id);
   if (m.from === 'cliente' && pendingEl && pendingEl.dataset.text === m.text) { pendingEl.remove(); pendingEl = null; }
   const b = el('div', 'msg ' + m.from);
+  if (m.from === 'negocio') b.append(el('span', 'author', m.author || biz?.owner || 'Negocio'));
 
-  if (m.kind === 'quote' && m.quote) b.appendChild(receipt(m.quote));
-  else if (m.kind === 'charge') b.appendChild(payCard(m));
+  if (m.kind === 'quote' && m.quote) b.append(receipt(m.quote));
+  else if (m.kind === 'charge') b.append(payCard(m));
   else if (m.kind === 'paid') {
     b.classList.add('paid');
     const p = el('div');
     p.append(el('span', 'tick', '✓'), m.text);
-    b.appendChild(p);
+    b.append(p);
     if (m.chargeId) markPaid(m.chargeId);
   } else b.append(m.text);
 
   if (m.kind === 'charge' && m.simulated) {
-    const note = el('div', 'sim-note', 'Modo simulado: este cobro no llega a ningún banco.');
+    const note = el('div', 'sim-note', 'Modo de prueba: este cobro no llega a ningún banco.');
     const btn = el('button', '', 'Simular que pagué');
     btn.onclick = async () => { btn.disabled = true; await fetch('/api/dev/simulate-payment/' + m.chargeId, { method: 'POST' }); };
-    note.appendChild(btn);
-    b.querySelector('.pay-card').appendChild(note);
+    note.append(btn);
+    b.querySelector('.pay-card').append(note);
   }
-
-  b.appendChild(el('time', '', time(m.at)));
+  b.append(el('time', '', time(m.at)));
 
   if (m.buttons?.length) {
-    b.classList.add('has-opts');
     const box = el('div', 'opts');
     for (const opt of m.buttons) {
       const btn = el('button', '', opt.label);
       btn.type = 'button';
       btn.onclick = () => {
         if (busy) return;
-        box.classList.add('done');
-        btn.classList.add('chosen');
+        box.classList.add('done'); btn.classList.add('chosen');
         box.querySelectorAll('button').forEach(x => x.disabled = true);
         send({ action: opt.action, text: opt.label });
       };
-      box.appendChild(btn);
+      box.append(btn);
     }
-    b.appendChild(box);
+    b.append(box);
   }
   $msgs.insertBefore(b, typing.isConnected ? typing : null);
   scroll();
@@ -153,11 +164,12 @@ function render(m) {
 async function send(body) {
   if (!job || busy) return;
   busy = true;
+  document.getElementById('send').disabled = true;
   if (body.text) {
     pendingEl = el('div', 'msg cliente');
     pendingEl.dataset.text = body.text;
     pendingEl.append(body.text, el('time', '', time(Date.now())));
-    $msgs.appendChild(pendingEl);
+    $msgs.insertBefore(pendingEl, typing.isConnected ? typing : null);
   }
   setTyping(true);
   const started = Date.now();
@@ -165,25 +177,24 @@ async function send(body) {
     const res = await fetch('/api/jobs/' + job.id + '/messages', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
+    if (!res.ok) throw new Error();
     const data = await res.json();
-    const wait = 500 - (Date.now() - started);
+    const wait = 450 - (Date.now() - started);
     if (wait > 0) await new Promise(r => setTimeout(r, wait));
     if (pendingEl) { pendingEl.remove(); pendingEl = null; }
     setTyping(false);
-    if (data.messages) data.messages.forEach(render);
+    data.messages?.forEach(render);
     syncCharges(data);
   } catch {
     setTyping(false);
-    render({ id: 'err-' + Date.now(), from: 'agente', text: 'No me llegó tu mensaje. Revisa tu conexión e inténtalo de nuevo.', at: Date.now() });
+    render({ id: 'err-' + Date.now(), from: 'agente', text: 'No pude enviar tu mensaje. Revisa tu conexión e inténtalo de nuevo.', at: Date.now() });
   } finally {
     busy = false;
-    $input.focus();
+    document.getElementById('send').disabled = false;
   }
 }
 
-function syncCharges(j) {
-  for (const c of j?.charges || []) if (c.status === 'pagado') markPaid(c.id);
-}
+function syncCharges(j) { for (const c of j?.charges || []) if (c.status === 'pagado') markPaid(c.id); }
 
 document.getElementById('composer').onsubmit = e => {
   e.preventDefault();
@@ -191,12 +202,58 @@ document.getElementById('composer').onsubmit = e => {
   if (!text || busy) return;
   $input.value = '';
   send({ text });
+  $input.focus();
 };
+
+function quickReplies() {
+  const q = document.getElementById('quick');
+  q.innerHTML = '';
+  const opts = [
+    ['Ver precios', { action: 'prices', text: 'Ver precios' }],
+    ['¿Cómo pago?', { text: '¿Cómo pago?' }],
+    ['Horario', { text: '¿Cuál es su horario?' }],
+    [`Hablar con ${biz.owner}`, { action: 'human', text: `Quiero hablar con ${biz.owner}` }],
+  ];
+  for (const [label, body] of opts) {
+    const b = el('button', '', label);
+    b.type = 'button';
+    b.onclick = () => send(body);
+    q.append(b);
+  }
+}
+
+function fillInfo() {
+  const tile = document.getElementById('i-tile');
+  tile.textContent = biz.emoji;
+  tile.style.background = `color-mix(in srgb, ${biz.color} 14%, #fff)`;
+  document.getElementById('i-name').textContent = biz.name;
+  document.getElementById('i-cat').textContent = [biz.categoryLabel, biz.profileLabel].filter(Boolean).join(' · ');
+  document.getElementById('i-about').textContent = biz.about;
+  document.getElementById('i-zone').textContent = biz.zone;
+  document.getElementById('i-hours').textContent = biz.hours;
+  document.getElementById('i-pay').textContent = biz.depositPercent < 100
+    ? `Anticipo del ${biz.depositPercent}% para apartar; el resto al terminar.` : 'Pago completo al confirmar.';
+  const menu = document.getElementById('i-menu');
+  menu.innerHTML = '';
+  for (const it of biz.items) {
+    const r = el('div', 'menu-item');
+    r.append(el('span', '', it.name), el('b', '', money(it.price)));
+    menu.append(r);
+  }
+}
+const info = document.getElementById('info');
+const openInfo = () => { info.classList.add('open'); info.setAttribute('aria-hidden', 'false'); };
+const closeInfo = () => { info.classList.remove('open'); info.setAttribute('aria-hidden', 'true'); };
+document.getElementById('info-btn').onclick = openInfo;
+document.getElementById('who').onclick = openInfo;
+document.getElementById('who').onkeydown = e => { if (e.key === 'Enter') openInfo(); };
+document.getElementById('info-close').onclick = closeInfo;
+info.onclick = e => { if (e.target === info) closeInfo(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo(); });
 
 async function start() {
   const status = await (await fetch('/api/status')).json();
-  const mode = document.getElementById('mode');
-  if (status.mode === 'simulado') { mode.textContent = 'simulado'; mode.className = 'badge sim'; }
+  if (status.mode === 'simulado') { const m = document.getElementById('mode'); m.hidden = false; m.textContent = 'Prueba'; m.className = 'badge sim'; }
 
   // ?n=<negocio> abre el chat de ese negocio; ?j=<id> retoma una conversación; ?nuevo empieza otra.
   const params = new URLSearchParams(location.search);
@@ -217,14 +274,15 @@ async function start() {
   store.set('trato_job_' + businessId, job.id);
   history.replaceState(null, '', '/chat?j=' + job.id);
 
-  const biz = status.businesses.find(b => b.id === businessId) || status.businesses[0];
+  biz = status.businesses.find(b => b.id === businessId) || status.businesses[0];
   document.title = biz.name + ' · Trato Hecho';
   document.getElementById('biz').textContent = biz.name;
-  document.getElementById('agent').textContent = biz.agentName + ' · asistente · en línea';
+  document.getElementById('agent').textContent = biz.agentName + ' · en línea';
   const avatar = document.getElementById('avatar');
-  avatar.textContent = biz.emoji || '🤝';
-  avatar.style.background = biz.color ? `color-mix(in srgb, ${biz.color} 18%, #fff)` : '#fff';
-  if (biz.about) document.getElementById('intro').textContent = biz.about + ' Pagos con CoDi, directo de tu banco.';
+  avatar.textContent = biz.emoji;
+  avatar.style.background = `color-mix(in srgb, ${biz.color} 18%, #fff)`;
+  fillInfo();
+  quickReplies();
 
   job.messages.forEach(render);
   syncCharges(job);
@@ -235,7 +293,7 @@ async function start() {
     if (evt.type === 'message') render(evt.message);
     if (evt.type === 'job') syncCharges(evt.job);
   };
-  $input.focus();
+  if (matchMedia('(min-width: 560px)').matches) $input.focus();
 }
 start();
 </script>

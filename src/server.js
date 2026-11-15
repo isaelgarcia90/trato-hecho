@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Webhook } from 'standardwebhooks';
 import { config } from './config.js';
-import { brand, businesses, defaultBusiness, getBusiness, publicBusiness } from './catalog.js';
+import { brand, businesses, categories, defaultBusiness, getBusiness, profiles, publicBusiness } from './catalog.js';
 import { greet, handleClientMessage } from './agent.js';
 import { businessFor, chargeJob, handlePaymentEvent, money, notifyJob, publicJob, say } from './payments.js';
 import { createJob, getCharge, getJob, listJobs, newId, updateJob } from './store.js';
@@ -73,6 +73,8 @@ app.get('/chat', (req, res) => res.sendFile(path.join(publicDir, 'chat.html')));
 app.get('/api/status', (req, res) => {
   res.json({
     brand,
+    categories,
+    profiles,
     businesses: businesses.map(publicBusiness),
     mode: config.peyMock ? 'simulado' : 'produccion',
     demoChargeAmount: config.demoChargeAmount,
@@ -129,6 +131,26 @@ app.post('/api/panel/jobs/:id/extras', panelAuth, (req, res) => {
   if (!concept || !(amount > 0)) return res.status(400).json({ error: 'Concepto y monto > 0 requeridos' });
   updateJob(job.id, { extras: [...job.extras, { id: newId(), concept, amount }] });
   say(job.id, 'agente', `${businessFor(job).owner} agregó a tu cuenta: ${concept} (${money(amount)}).`);
+  notifyJob(job.id);
+  res.json(publicJob(getJob(job.id)));
+});
+
+// El negocio contesta directamente en el chat del cliente.
+app.post('/api/panel/jobs/:id/reply', panelAuth, (req, res) => {
+  const job = getJob(req.params.id);
+  const text = String(req.body?.text || '').trim().slice(0, 1000);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  if (!text) return res.status(400).json({ error: 'Escribe un mensaje' });
+  say(job.id, 'negocio', text, { author: businessFor(job).owner });
+  updateJob(job.id, { needsHuman: false, answeredAt: Date.now() });
+  notifyJob(job.id);
+  res.json(publicJob(getJob(job.id)));
+});
+
+app.post('/api/panel/jobs/:id/resolve', panelAuth, (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  updateJob(job.id, { needsHuman: false });
   notifyJob(job.id);
   res.json(publicJob(getJob(job.id)));
 });

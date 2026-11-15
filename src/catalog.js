@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { norm } from './nlu.js';
 
 // Negocios configurables (config/businesses.json). Los precios los pone el negocio, nunca el agente.
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -9,6 +10,7 @@ const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 
 export const brand = data.brand;
 export const profiles = data.profiles || {};
+export const categories = data.categories || {};
 export const businesses = data.businesses.map(b => ({
   agentName: brand.defaultAgentName,
   depositPercent: 100,
@@ -16,6 +18,7 @@ export const businesses = data.businesses.map(b => ({
   color: '#0f766e',
   ...b,
   steps: { details: false, quantity: false, schedule: null, ...b.steps },
+  items: b.items.map(it => ({ ...it, keywords: (it.keywords || []).map(norm) })),
 }));
 
 export function getBusiness(id) {
@@ -23,31 +26,38 @@ export function getBusiness(id) {
 }
 export const defaultBusiness = businesses[0];
 
-/** Datos que puede ver cualquiera (chat, landing). */
+/** Datos que puede ver cualquiera (chat, inicio). */
 export function publicBusiness(b) {
   return {
-    id: b.id, name: b.name, owner: b.owner, giro: b.giro, zone: b.zone, agentName: b.agentName,
-    profile: b.profile, profileLabel: profiles[b.profile] || null, emoji: b.emoji, color: b.color, about: b.about,
+    id: b.id, name: b.name, owner: b.owner, giro: b.giro, zone: b.zone, hours: b.hours, agentName: b.agentName,
+    category: b.category, categoryLabel: categories[b.category]?.label || null,
+    profile: b.profile, profileLabel: profiles[b.profile] || null,
+    emoji: b.emoji, color: b.color, about: b.about,
     steps: b.steps, depositPercent: b.depositPercent,
     items: b.items.map(({ id, name, price }) => ({ id, name, price })),
   };
 }
 
+/** Producto o servicio que mejor coincide con el texto (gana la palabra clave más específica). */
 export function findItem(business, text) {
-  if (!text) return null;
-  const t = text.toLowerCase();
+  const t = norm(text);
+  if (!t) return null;
+  let best = null;
+  let bestScore = 0;
   for (const it of business.items) {
-    if (it.id === t || it.name.toLowerCase() === t) return it;
-    if ((it.keywords || []).some(k => t.includes(k))) return it;
+    if (it.id === t || norm(it.name) === t) return it;
+    for (const k of it.keywords) {
+      if (k && t.includes(k) && k.length > bestScore) { best = it; bestScore = k.length; }
+    }
   }
-  return null;
+  return best;
 }
 
 export function itemById(business, id) {
   return business.items.find(it => it.id === id) || null;
 }
 
-/** "cita" para servicios, "entrega" para pedidos; null si el negocio no agenda. */
+/** "Cita" para servicios, "Entrega" para pedidos; null si el negocio no agenda. */
 export function scheduleLabel(business) {
   return business.steps.schedule === 'entrega' ? 'Entrega' : business.steps.schedule === 'cita' ? 'Cita' : null;
 }
@@ -57,7 +67,7 @@ const DEFAULT_SLOTS = {
   entrega: [{ day: 1, time: '12:00 a 14:00' }, { day: 1, time: '17:00 a 19:00' }, { day: 2, time: '12:00 a 14:00' }],
 };
 
-// Horarios de ejemplo a partir de hoy (hora de CDMX, simplificado). Cada negocio puede definir
+// Horarios a partir de hoy (hora de CDMX, simplificado). Cada negocio puede definir
 // "slots": [{ "day": días a partir de hoy, "time": "texto opcional" }].
 export function availableSlots(business, now = new Date()) {
   const fmt = new Intl.DateTimeFormat('es-MX', {
@@ -65,7 +75,7 @@ export function availableSlots(business, now = new Date()) {
   });
   const slots = business.slots || DEFAULT_SLOTS[business.steps.schedule] || DEFAULT_SLOTS.cita;
   return slots.slice(0, 3).map(s => {
-    const date = fmt.format(new Date(now.getTime() + s.day * 24 * 3600e3));
+    const date = s.day === 0 ? 'hoy' : fmt.format(new Date(now.getTime() + s.day * 24 * 3600e3));
     return s.time ? `${date}, ${s.time}` : date;
   });
 }

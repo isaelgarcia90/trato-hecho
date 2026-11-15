@@ -3,129 +3,340 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trato Hecho · Cuentas claras</title>
-  <meta name="description" content="Un asistente por chat que cotiza, agenda y cobra con CoDi para cualquier negocio.">
+  <title>Trato Hecho · Cotiza, agenda y paga por chat</title>
+  <meta name="description" content="Encuentra plomeros, estéticas, clases, comida y más. Cotiza por chat con precios claros, agenda y paga con CoDi sin comisión.">
+  <meta name="theme-color" content="#0f766e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="logo" href="/"><span class="mark">🤝</span><span>Trato Hecho <small>· Cuentas claras</small></span></a>
-    <nav>
-      <span id="mode" class="badge hide-sm">…</span>
-      <a href="/panel">Panel del negocio</a>
-    </nav>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="m5 12 5 5 9-10"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 6h16M7 12h10M10 18h4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="in">
+      <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho <small>· Cuentas claras</small></a>
+      <nav aria-label="Principal">
+        <a href="#explorar">Explorar</a>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#negocios">Para negocios</a>
+      </nav>
+      <div class="right">
+        <span id="mode" class="badge" hidden></span>
+        <a class="btn sm" href="/panel"><span>Panel del negocio</span><svg width="16" height="16"><use href="#i-arrow"/></svg></a>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section class="wrap hero">
-      <div>
-        <h1>Tu negocio atiende, cotiza y <em>cobra solo</em>.</h1>
-        <p class="lead">Clarito es un asistente por chat para cualquier negocio, formal o informal: responde a tus clientes,
-          les da tus precios, agenda si hace falta y les manda el cobro con CoDi. Cuando el banco confirma el pago,
-          el trato queda cerrado y tú lo ves en tu panel.</p>
-        <div class="cta">
-          <a class="btn" href="#negocios">Probar un chat</a>
-          <a class="btn ghost" href="/panel">Ver el panel</a>
+    <section class="hero">
+      <div class="container in">
+        <div>
+          <span class="eyebrow">Pagos con CoDi · sin comisión</span>
+          <h1>Cotiza, agenda y paga <span>por chat</span>.</h1>
+          <p class="lead">Escríbele a plomeros, estéticas, maestros, cocineras y más. Te responden al instante con precios claros, apartas tu lugar y pagas desde la app de tu banco.</p>
+          <form class="search" id="hero-search" role="search">
+            <span class="ic"><svg width="20" height="20"><use href="#i-search"/></svg></span>
+            <label class="sr-only" for="q">¿Qué necesitas?</label>
+            <input id="q" type="search" placeholder="¿Qué necesitas? Plomero, pastel, clases…" autocomplete="off">
+            <button class="btn primary">Buscar</button>
+          </form>
+          <div class="popular" id="popular">Popular:</div>
+          <div class="trust">
+            <span><svg width="16" height="16"><use href="#i-check"/></svg>Precios fijos del negocio</span>
+            <span><svg width="16" height="16"><use href="#i-check"/></svg>Sin tarjeta ni comisiones</span>
+            <span><svg width="16" height="16"><use href="#i-check"/></svg>Confirmación al instante</span>
+          </div>
         </div>
-        <div class="perks"><span>Sin comisión</span><span>Sin contracargos</span><span>Dinero al instante</span><span>Sin terminal</span></div>
-      </div>
-      <div class="mock" aria-hidden="true">
-        <div class="head"><span class="av">🫔</span>Tamales Doña Mary</div>
-        <div class="bubble">Hola, soy Clarito, el asistente de Tamales Doña Mary. ¿Qué te sirvo hoy?</div>
-        <div class="bubble out">Me das 10 tamales verdes 🙏</div>
-        <div class="bubble">Tu cotización: 10 × Tamal verde, <b>$250.00</b>. Te mando el cobro a tu app del banco.</div>
-        <div class="bubble paid">✅ Recibimos tu pago de $250.00. ¡Trato hecho!</div>
-      </div>
-    </section>
-
-    <section class="wrap section" id="negocios">
-      <h2>Pruébalo con un negocio de ejemplo</h2>
-      <p class="sub">El mismo asistente se adapta a cada negocio: con cita, con entrega o venta directa; con anticipo o pago completo.</p>
-      <div class="chips" id="chips" role="group" aria-label="Filtrar por tipo de negocio"></div>
-      <div class="biz-grid" id="businesses"></div>
-    </section>
-
-    <section class="wrap section">
-      <h2>Así funciona</h2>
-      <p class="sub">Para el cliente es como escribirle al negocio por WhatsApp.</p>
-      <div class="steps">
-        <div class="step"><b>Escribe lo que necesita</b><span>"Se tapó el baño", "quiero 10 tamales" o "necesito un logo".</span></div>
-        <div class="step"><b>Recibe precio claro</b><span>Clarito usa los precios del negocio; nunca los inventa.</span></div>
-        <div class="step"><b>Paga con CoDi</b><span>El cobro llega a la app de su banco, o paga con un QR.</span></div>
-        <div class="step"><b>Trato hecho</b><span>El pago se confirma solo y el negocio lo ve al instante en su panel.</span></div>
+        <div class="mock" aria-hidden="true">
+          <div class="mh"><span class="av">🔧</span><div>Plomería Don Beto<small>Clarito · en línea</small></div></div>
+          <div class="body">
+            <div class="b">Hola, soy Clarito. ¿Qué problema tienes en casa?</div>
+            <div class="b out">Se tapó el baño desde ayer 😩</div>
+            <div class="b rc"><div class="row"><span>Destape de WC</span><b>$380</b></div><div class="row"><span>Mañana, 16:00</span><span></span></div><div class="tot"><span>Anticipo</span><span>$190</span></div></div>
+            <div class="b out">Mándame el cobro</div>
+            <div class="b paid">✅ Pago recibido. Tu cita quedó confirmada.</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="wrap section">
-      <div class="why">
-        <div><b>$0</b><span>de comisión por cobro con CoDi; una terminal de tarjeta suele cobrar alrededor de 3% por venta.</span></div>
-        <div><b>Al instante</b><span>El dinero llega directo a la cuenta del negocio, sin esperar días.</span></div>
-        <div><b>Sin contracargos</b><span>Un pago CoDi no se revierte con un "yo no lo pedí".</span></div>
+    <section class="section" id="explorar">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Explora negocios</h2>
+            <p>Elige uno y cotiza en el chat. Te responde al momento.</p>
+          </div>
+        </div>
+        <div class="mobile-cats" id="mobile-cats" role="group" aria-label="Categorías"></div>
+        <div class="explore">
+          <aside class="filters" id="filters" aria-label="Filtros"></aside>
+          <div>
+            <div class="toolbar">
+              <span class="count" id="count"></span>
+              <span class="spacer"></span>
+              <button class="btn sm only-mobile" id="open-filters" type="button"><svg width="16" height="16"><use href="#i-filter"/></svg>Filtros</button>
+              <label class="sr-only" for="sort">Ordenar</label>
+              <select class="select" id="sort">
+                <option value="rel">Relevancia</option>
+                <option value="price">Precio: menor a mayor</option>
+                <option value="name">Nombre (A-Z)</option>
+              </select>
+            </div>
+            <div class="active-filters" id="active"></div>
+            <div class="grid" id="results"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="como-funciona" style="padding-top:0">
+      <div class="container">
+        <div class="section-head"><div><h2>Así de fácil</h2></div></div>
+        <div class="steps3">
+          <div class="s"><div class="num">1</div><h3>Cuéntale qué necesitas</h3><p>Escribe con tus palabras. Clarito, el asistente del negocio, te entiende y te pregunta solo lo necesario.</p></div>
+          <div class="s"><div class="num">2</div><h3>Recibe un precio claro</h3><p>La cotización sale de los precios del negocio. Eliges horario o fecha de entrega si aplica.</p></div>
+          <div class="s"><div class="num">3</div><h3>Paga y listo</h3><p>Apruebas el cobro CoDi en la app de tu banco o escaneas un QR. La confirmación llega al instante.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="negocios" style="padding-top:0">
+      <div class="container">
+        <div class="biz">
+          <div>
+            <h2>¿Tienes un negocio? Atiende y cobra sin estar pegado al teléfono.</h2>
+            <p>Desde el oficio independiente hasta el consultorio o la venta de la colonia: tus clientes cotizan, apartan y pagan solos. Tú ves todo en tu panel y entras al chat cuando te necesitan.</p>
+            <a class="btn primary lg" href="/panel">Abrir el panel del negocio</a>
+          </div>
+          <div class="feats">
+            <div class="f"><b>$0</b><span>de comisión por cobro con CoDi.</span></div>
+            <div class="f"><b>Al instante</b><span>El dinero llega directo a tu cuenta.</span></div>
+            <div class="f"><b>Sin contracargos</b><span>Un pago aprobado no se revierte.</span></div>
+            <div class="f"><b>Menos faltas</b><span>El anticipo asegura la cita.</span></div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="foot">Trato Hecho · Cursor Hackatón México 2026 · Cobros CoDi con el API de pey</footer>
+  <footer class="site-footer">
+    <div class="container in">
+      <span>© 2026 Trato Hecho · Cuentas claras</span>
+      <span>Pagos con CoDi a través de pey · <a href="/panel">Panel del negocio</a></span>
+    </div>
+  </footer>
 
-  <script>
-    const FLOW = { cita: '📅 Con cita', entrega: '📦 Con entrega', none: '⚡ Venta directa' };
-    const money = n => '$' + Number(n).toLocaleString('es-MX', { maximumFractionDigits: 2 });
-    let all = [];
-    let current = '';
+  <dialog class="sheet" id="sheet" aria-label="Filtros">
+    <div class="sh"><b>Filtros</b><button class="btn ghost sm" id="close-sheet" type="button">Cerrar</button></div>
+    <div class="sb" id="sheet-body"></div>
+    <div class="sf"><button class="btn" id="clear-sheet" type="button">Limpiar</button><button class="btn primary" id="apply-sheet" type="button">Ver resultados</button></div>
+  </dialog>
 
-    function cards() {
-      const box = document.getElementById('businesses');
-      box.innerHTML = '';
-      for (const b of all.filter(b => !current || b.profile === current)) {
-        const a = document.createElement('a');
-        a.className = 'biz-card';
-        a.href = '/chat?n=' + encodeURIComponent(b.id);
-        a.style.setProperty('--c', b.color);
-        a.innerHTML = `
-          <div class="top"><span class="emoji"></span><div><div class="profile"></div><b></b></div></div>
-          <p class="about"></p>
-          <div class="tags"><span class="flow"></span><span class="pay"></span><span class="from"></span></div>
-          <span class="go">Chatear con Clarito ›</span>`;
-        a.querySelector('.emoji').textContent = b.emoji;
-        a.querySelector('.profile').textContent = b.profileLabel || '';
-        a.querySelector('b').textContent = b.name;
-        a.querySelector('.about').textContent = b.about || b.giro;
-        a.querySelector('.flow').textContent = FLOW[b.steps.schedule || 'none'];
-        a.querySelector('.pay').textContent = b.depositPercent < 100 ? `Anticipo ${b.depositPercent}%` : 'Pago completo';
-        a.querySelector('.from').textContent = 'Desde ' + money(Math.min(...b.items.map(i => i.price)));
-        box.appendChild(a);
-      }
+<script>
+const money = n => '$' + Number(n).toLocaleString('es-MX', { maximumFractionDigits: 2 });
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const MODES = { cita: 'Con cita', entrega: 'Pedido con entrega', directa: 'Compra inmediata' };
+const PAYS = { anticipo: 'Con anticipo', completo: 'Pago completo' };
+const SYN = { dentista: 'dental', doctor: 'salud', mecanico: 'mecanica', carro: 'auto', coche: 'auto', perro: 'canina', mascota: 'canina',
+  pastel: 'postres', comida: 'comida', maestro: 'clases', profe: 'clases', foto: 'fotografia', luz: 'electricidad', llaves: 'cerrajeria', pelo: 'cabello' };
+const POPULAR = ['Plomero', 'Electricista', 'Pastel', 'Clases de inglés', 'Corte de cabello', 'Dentista'];
+
+let all = [], cats = {}, profiles = {};
+const state = { q: '', cat: '', modes: new Set(), pays: new Set(), profile: '', sort: 'rel' };
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const modeOf = b => b.steps.schedule === 'cita' ? 'cita' : b.steps.schedule === 'entrega' ? 'entrega' : 'directa';
+const payOf = b => b.depositPercent < 100 ? 'anticipo' : 'completo';
+const minPrice = b => Math.min(...b.items.map(i => i.price));
+const icon = (id, size = 15) => `<svg width="${size}" height="${size}"><use href="#${id}"/></svg>`;
+
+function matches(b) {
+  if (state.cat && b.category !== state.cat) return false;
+  if (state.modes.size && !state.modes.has(modeOf(b))) return false;
+  if (state.pays.size && !state.pays.has(payOf(b))) return false;
+  if (state.profile && b.profile !== state.profile) return false;
+  const words = norm(state.q).split(/\s+/).filter(w => w.length >= 3 && !['de', 'para', 'una', 'uno', 'los', 'las', 'con', 'que'].includes(w));
+  if (!words.length) return true;
+  const hay = norm([b.name, b.giro, b.about, b.categoryLabel, b.zone, ...b.items.map(i => i.name)].join(' '));
+  return words.every(w => {
+    const s = SYN[w] || w;
+    return hay.includes(s) || hay.includes(s.slice(0, Math.max(4, Math.ceil(s.length * 0.7))));
+  });
+}
+
+function card(b) {
+  const a = el('a', 'card');
+  a.href = '/chat?n=' + encodeURIComponent(b.id);
+  a.style.setProperty('--c', b.color);
+  a.innerHTML = `
+    <div class="top"><span class="tile"></span><div><h3></h3><div class="cat"></div></div></div>
+    <p></p>
+    <div class="meta"><span class="z">${icon('i-pin')}<em></em></span><span class="h">${icon('i-clock')}<em></em></span></div>
+    <div class="tags"></div>
+    <div class="foot"><span class="price">Desde<b></b></span><span class="cta">Cotizar ${icon('i-arrow', 16)}</span></div>`;
+  a.querySelector('.tile').textContent = b.emoji;
+  a.querySelector('h3').textContent = b.name;
+  a.querySelector('.cat').textContent = [b.categoryLabel, b.profileLabel].filter(Boolean).join(' · ');
+  a.querySelector('p').textContent = b.about;
+  a.querySelector('.z em').textContent = b.zone;
+  a.querySelector('.h em').textContent = b.hours;
+  a.querySelector('.meta').querySelectorAll('em').forEach(e => e.style.fontStyle = 'normal');
+  const tags = a.querySelector('.tags');
+  tags.append(el('span', 'badge', MODES[modeOf(b)]));
+  tags.append(el('span', 'badge', b.depositPercent < 100 ? `Anticipo ${b.depositPercent}%` : 'Pago completo'));
+  a.querySelector('.price b').textContent = money(minPrice(b));
+  a.setAttribute('aria-label', `${b.name}, ${b.categoryLabel}, desde ${money(minPrice(b))}`);
+  return a;
+}
+
+function render() {
+  let list = all.filter(matches);
+  if (state.sort === 'price') list = [...list].sort((a, b) => minPrice(a) - minPrice(b));
+  if (state.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const box = $('results');
+  box.innerHTML = '';
+  if (!list.length) {
+    const e = el('div', 'no-results');
+    e.innerHTML = '<div style="font-size:34px">🔎</div><h3>No encontramos negocios con esos filtros</h3><p>Prueba con otras palabras o quita algunos filtros.</p>';
+    const btn = el('button', 'btn', 'Limpiar filtros');
+    btn.onclick = clearAll;
+    e.append(btn);
+    box.append(e);
+  } else list.forEach(b => box.append(card(b)));
+  $('count').innerHTML = `<b>${list.length}</b> ${list.length === 1 ? 'negocio' : 'negocios'}`;
+  renderActive();
+  renderFilters($('filters'));
+  renderMobileCats();
+  syncUrl();
+}
+
+function renderActive() {
+  const box = $('active');
+  box.innerHTML = '';
+  const add = (label, off) => {
+    const t = el('span', 'tag', label);
+    const x = el('button', '', '×');
+    x.setAttribute('aria-label', 'Quitar filtro ' + label);
+    x.onclick = () => { off(); render(); };
+    t.append(x); box.append(t);
+  };
+  if (state.q) add(`“${state.q}”`, () => { state.q = ''; $('q').value = ''; });
+  if (state.cat) add(cats[state.cat]?.label, () => state.cat = '');
+  state.modes.forEach(m => add(MODES[m], () => state.modes.delete(m)));
+  state.pays.forEach(p => add(PAYS[p], () => state.pays.delete(p)));
+  if (state.profile) add(profiles[state.profile], () => state.profile = '');
+}
+
+function countCat(id) { return all.filter(b => !id || b.category === id).length; }
+
+function renderFilters(root) {
+  root.innerHTML = '';
+  const g1 = el('div'); g1.append(el('h4', '', 'Categoría'));
+  const list = el('div', 'cat-list');
+  for (const [id, c] of [['', { label: 'Todas', emoji: '✨' }], ...Object.entries(cats)]) {
+    if (id && !countCat(id)) continue;
+    const btn = el('button');
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', String(state.cat === id));
+    btn.append(el('span', '', c.emoji), el('span', '', c.label), el('span', 'n', String(countCat(id))));
+    btn.onclick = () => { state.cat = id; render(); };
+    list.append(btn);
+  }
+  g1.append(list); root.append(g1);
+
+  const checks = (title, map, set) => {
+    const g = el('div'); g.append(el('h4', '', title));
+    for (const [id, label] of Object.entries(map)) {
+      const l = el('label', 'check');
+      const i = el('input'); i.type = 'checkbox'; i.checked = set.has(id);
+      i.onchange = () => { i.checked ? set.add(id) : set.delete(id); if (root.id === 'filters') render(); };
+      l.append(i, document.createTextNode(label));
+      g.append(l);
     }
+    root.append(g);
+  };
+  checks('Forma de atención', MODES, state.modes);
+  checks('Forma de pago', PAYS, state.pays);
 
-    function chips() {
-      const box = document.getElementById('chips');
-      const seen = [];
-      for (const b of all) if (b.profile && !seen.some(s => s.id === b.profile)) seen.push({ id: b.profile, label: b.profileLabel });
-      for (const p of [{ id: '', label: 'Todos' }, ...seen]) {
-        const c = document.createElement('button');
-        c.className = 'chip';
-        c.textContent = p.label;
-        c.setAttribute('aria-pressed', String(p.id === current));
-        c.onclick = () => {
-          current = p.id;
-          box.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
-          cards();
-        };
-        box.appendChild(c);
-      }
-    }
+  const g4 = el('div'); g4.append(el('h4', '', 'Tipo de negocio'));
+  const sel = el('select', 'select');
+  sel.append(new Option('Todos', ''));
+  for (const [id, label] of Object.entries(profiles)) sel.append(new Option(label, id));
+  sel.value = state.profile;
+  sel.onchange = () => { state.profile = sel.value; if (root.id === 'filters') render(); };
+  g4.append(sel); root.append(g4);
+}
 
-    fetch('/api/status').then(r => r.json()).then(s => {
-      const el = document.getElementById('mode');
-      el.textContent = s.mode === 'simulado' ? 'Modo simulado' : 'Conectado a pey';
-      el.className = 'badge hide-sm ' + (s.mode === 'simulado' ? 'sim' : 'prod');
-      all = s.businesses;
-      chips();
-      cards();
-    });
-  </script>
+function renderMobileCats() {
+  const box = $('mobile-cats');
+  box.innerHTML = '';
+  for (const [id, c] of [['', { label: 'Todas', emoji: '✨' }], ...Object.entries(cats)]) {
+    if (id && !countCat(id)) continue;
+    const b = el('button', 'chip');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(state.cat === id));
+    b.textContent = `${c.emoji} ${c.label}`;
+    b.onclick = () => { state.cat = id; render(); };
+    box.append(b);
+  }
+}
+
+function clearAll() {
+  Object.assign(state, { q: '', cat: '', profile: '' });
+  state.modes.clear(); state.pays.clear();
+  $('q').value = '';
+  render();
+}
+
+function syncUrl() {
+  const p = new URLSearchParams();
+  if (state.q) p.set('q', state.q);
+  if (state.cat) p.set('cat', state.cat);
+  const s = p.toString();
+  history.replaceState(null, '', s ? '?' + s + location.hash : location.pathname + location.hash);
+}
+
+$('hero-search').onsubmit = e => {
+  e.preventDefault();
+  state.q = $('q').value.trim();
+  render();
+  document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' });
+};
+$('q').addEventListener('input', () => { state.q = $('q').value.trim(); render(); });
+$('sort').onchange = () => { state.sort = $('sort').value; render(); };
+const sheet = $('sheet');
+$('open-filters').onclick = () => { renderFilters($('sheet-body')); sheet.showModal(); };
+$('close-sheet').onclick = () => { sheet.close(); render(); };
+$('apply-sheet').onclick = () => { sheet.close(); render(); };
+$('clear-sheet').onclick = () => { state.modes.clear(); state.pays.clear(); state.profile = ''; renderFilters($('sheet-body')); };
+sheet.addEventListener('close', render);
+
+for (const p of POPULAR) {
+  const b = el('button', '', p);
+  b.type = 'button';
+  b.onclick = () => { $('q').value = p; state.q = p; render(); document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' }); };
+  $('popular').append(b);
+}
+
+fetch('/api/status').then(r => r.json()).then(s => {
+  all = s.businesses; cats = s.categories || {}; profiles = s.profiles || {};
+  if (s.mode === 'simulado') { const m = $('mode'); m.hidden = false; m.textContent = 'Modo de prueba'; m.className = 'badge sim'; }
+  const p = new URLSearchParams(location.search);
+  state.q = p.get('q') || ''; state.cat = cats[p.get('cat')] ? p.get('cat') : '';
+  $('q').value = state.q;
+  render();
+});
+</script>
 </body>
 </html>

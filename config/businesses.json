@@ -1,168 +1,201 @@
 {
   "brand": { "name": "Trato Hecho", "tagline": "Cuentas claras", "defaultAgentName": "Clarito" },
+  "categories": {
+    "hogar": { "label": "Hogar y reparaciones", "emoji": "🏠" },
+    "belleza": { "label": "Belleza y cuidado", "emoji": "💇" },
+    "salud": { "label": "Salud y bienestar", "emoji": "🩺" },
+    "comida": { "label": "Comida y repostería", "emoji": "🍽️" },
+    "educacion": { "label": "Clases y tutorías", "emoji": "📚" },
+    "creativos": { "label": "Diseño y fotografía", "emoji": "🎨" },
+    "mascotas": { "label": "Mascotas", "emoji": "🐾" },
+    "autos": { "label": "Autos", "emoji": "🚗" },
+    "regalos": { "label": "Regalos y artesanías", "emoji": "🎁" }
+  },
   "profiles": {
-    "oficio": "Oficios",
-    "formal": "Negocio formal",
-    "freelance": "Freelancers",
-    "emprendedor": "Emprendedores",
-    "joven": "Jóvenes y niños",
-    "mayor": "Tercera edad"
+    "oficio": "Oficio independiente",
+    "formal": "Negocio establecido",
+    "freelance": "Freelancer",
+    "emprendedor": "Emprendimiento",
+    "joven": "Joven emprendedor",
+    "mayor": "Negocio familiar"
   },
   "businesses": [
     {
-      "id": "plomeria",
-      "name": "Plomería Don Beto",
-      "owner": "Don Beto",
-      "profile": "oficio",
-      "emoji": "🔧",
-      "color": "#2563eb",
-      "about": "Plomero independiente con 20 años de oficio.",
-      "giro": "plomería",
-      "zone": "CDMX",
+      "id": "plomeria", "name": "Plomería Don Beto", "owner": "Don Beto",
+      "category": "hogar", "profile": "oficio", "emoji": "🔧", "color": "#2563eb",
+      "about": "Plomero con 20 años de oficio. Fugas, destapes y calentadores.",
+      "giro": "plomería", "zone": "Coyoacán y Benito Juárez, a domicilio", "hours": "Lunes a sábado, 8:00 a 19:00",
       "greeting": "Te ayudo a cotizar y agendar. ¿Qué problema tienes en casa?",
       "steps": { "details": true, "quantity": false, "schedule": "cita" },
       "detailsPrompt": "Cuéntame un poco más: ¿dónde es y desde cuándo pasa?",
+      "detailsExample": "la llave de la cocina gotea desde ayer",
       "depositPercent": 50,
       "items": [
-        { "id": "fuga", "name": "Reparación de fuga", "price": 450,
-          "keywords": ["fuga", "gotea", "goteo", "gotera", "tira agua", "escurre", "llave", "mezcladora"] },
-        { "id": "destape", "name": "Destape de drenaje o WC", "price": 380,
-          "keywords": ["destape", "tapad", "tapó", "tapo", "drenaje", "coladera", "baño", "wc", "excusado", "taza", "lavabo", "fregadero"] },
-        { "id": "calentador", "name": "Instalación de calentador", "price": 950,
-          "keywords": ["calentador", "boiler", "bóiler", "agua caliente", "regadera fría"] },
-        { "id": "tinaco", "name": "Limpieza o revisión de tinaco", "price": 600,
-          "keywords": ["tinaco", "cisterna", "bomba", "presión"] },
-        { "id": "revision", "name": "Visita de diagnóstico", "price": 200,
-          "keywords": ["revis", "diagnóstico", "diagnostico", "no sé", "no se", "otro", "ver qué", "checar"] }
+        { "id": "fuga", "name": "Reparación de fuga", "price": 450, "keywords": ["fuga", "gotea", "goteo", "gotera", "tira agua", "escurre", "llave", "mezcladora"] },
+        { "id": "destape", "name": "Destape de drenaje o WC", "price": 380, "keywords": ["destape", "tapad", "tapo", "drenaje", "coladera", "bano", "wc", "excusado", "taza", "lavabo", "fregadero"] },
+        { "id": "calentador", "name": "Instalación de calentador", "price": 950, "keywords": ["calentador", "boiler", "agua caliente", "regadera fria"] },
+        { "id": "tinaco", "name": "Limpieza o revisión de tinaco", "price": 600, "keywords": ["tinaco", "cisterna", "bomba", "presion"] },
+        { "id": "revision", "name": "Visita de diagnóstico", "price": 200, "keywords": ["revis", "diagnostico", "no se que", "checar", "visita"] }
       ]
     },
     {
-      "id": "dental",
-      "name": "Consultorio Dental Sonríe",
-      "owner": "Dra. Paty",
-      "profile": "formal",
-      "emoji": "🦷",
-      "color": "#0891b2",
-      "about": "Consultorio con RFC y factura; el anticipo evita citas perdidas.",
-      "giro": "odontología",
-      "zone": "CDMX",
+      "id": "electricista", "name": "Electricidad Hernández", "owner": "Javier",
+      "category": "hogar", "profile": "oficio", "emoji": "💡", "color": "#d97706",
+      "about": "Electricista certificado. Instalaciones, cortos y centros de carga.",
+      "giro": "electricidad residencial", "zone": "Iztapalapa y Tláhuac, a domicilio", "hours": "Lunes a sábado, 9:00 a 18:00",
+      "greeting": "¿Qué falla eléctrica tienes o qué necesitas instalar?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿Qué está pasando exactamente y en qué parte de la casa?",
+      "detailsExample": "se bota la pastilla cuando prendo el microondas",
+      "depositPercent": 50,
+      "items": [
+        { "id": "corto", "name": "Revisión de corto circuito", "price": 350, "keywords": ["corto", "chispa", "se bota", "pastilla", "se fue la luz", "sin luz", "apagon"] },
+        { "id": "contacto", "name": "Instalación de contacto o apagador", "price": 250, "keywords": ["contacto", "enchufe", "apagador", "toma"] },
+        { "id": "lampara", "name": "Instalación de lámpara o ventilador", "price": 400, "keywords": ["lampara", "ventilador", "foco", "luminaria", "candil"] },
+        { "id": "centro", "name": "Cambio de centro de carga", "price": 900, "keywords": ["centro de carga", "breaker", "interruptor", "tablero"] }
+      ]
+    },
+    {
+      "id": "cerrajeria", "name": "Cerrajería Rápida 24 h", "owner": "Toño",
+      "category": "hogar", "profile": "oficio", "emoji": "🔑", "color": "#475569",
+      "about": "Aperturas y cambios de chapa, también de noche y fines de semana.",
+      "giro": "cerrajería", "zone": "Toda la CDMX", "hours": "Todos los días, 24 horas",
+      "greeting": "¿Te quedaste fuera o necesitas cambiar una chapa?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "scheduleQuestion": "¿Cuándo te visitamos?",
+      "slots": [{ "day": 0, "time": "lo antes posible (30 a 60 min)" }, { "day": 0, "time": "en 2 a 3 horas" }, { "day": 1, "time": "10:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "apertura", "name": "Apertura de puerta", "price": 450, "keywords": ["abrir", "apertura", "me quede fuera", "se cerro", "deje las llaves", "perdi las llaves", "no puedo entrar"] },
+        { "id": "chapa", "name": "Cambio de chapa", "price": 650, "keywords": ["chapa", "cerradura", "cambiar la", "cerrojo"] },
+        { "id": "auto", "name": "Apertura de auto", "price": 550, "keywords": ["auto", "carro", "coche", "camioneta", "abrir mi carro", "abrir el carro", "abrir mi auto", "abrir el auto", "abrir mi coche"] }
+      ]
+    },
+    {
+      "id": "pintura", "name": "Pintura y Acabados Ramírez", "owner": "Don Ramírez",
+      "category": "hogar", "profile": "oficio", "emoji": "🖌️", "color": "#0d9488",
+      "about": "Pintura interior y exterior con material de primera.",
+      "giro": "pintura y acabados", "zone": "Álvaro Obregón y Cuajimalpa", "hours": "Lunes a viernes, 8:00 a 17:00",
+      "greeting": "¿Qué te gustaría pintar?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿Qué medidas aproximadas tiene y de qué color lo quieres?",
+      "detailsExample": "una recámara de 3x4 en blanco hueso",
+      "depositPercent": 30,
+      "items": [
+        { "id": "recamara", "name": "Pintura de recámara", "price": 1800, "keywords": ["recamara", "cuarto", "habitacion", "sala", "interior"] },
+        { "id": "fachada", "name": "Pintura de fachada (hasta 30 m²)", "price": 3500, "keywords": ["fachada", "exterior", "frente", "barda"] },
+        { "id": "resane", "name": "Resane y pintura de muro", "price": 900, "keywords": ["resane", "grieta", "humedad", "muro", "pared"] }
+      ]
+    },
+    {
+      "id": "limpieza", "name": "Limpieza Brillo", "owner": "Rosa",
+      "category": "hogar", "profile": "emprendedor", "emoji": "🧽", "color": "#0284c7",
+      "about": "Equipo de limpieza profesional para casas y departamentos.",
+      "giro": "limpieza del hogar", "zone": "Benito Juárez, Cuauhtémoc y Miguel Hidalgo", "hours": "Lunes a sábado, 8:00 a 18:00",
+      "greeting": "¿Qué tipo de limpieza necesitas?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "depositPercent": 100,
+      "items": [
+        { "id": "depa", "name": "Limpieza de departamento", "price": 650, "keywords": ["departamento", "depa", "limpieza general", "limpiar"] },
+        { "id": "profunda", "name": "Limpieza profunda de casa", "price": 1200, "keywords": ["profunda", "casa", "mudanza", "a fondo"] },
+        { "id": "sala", "name": "Lavado de sala (3 piezas)", "price": 700, "keywords": ["sala", "sillon", "sofa", "tapiceria", "lavado de"] }
+      ]
+    },
+    {
+      "id": "linea-blanca", "name": "Servicio Técnico Gómez", "owner": "Ing. Gómez",
+      "category": "hogar", "profile": "formal", "emoji": "🧊", "color": "#4f46e5",
+      "about": "Reparación de lavadoras y refrigeradores. Garantía de 90 días.",
+      "giro": "reparación de línea blanca", "zone": "Zona sur de la CDMX", "hours": "Lunes a viernes, 9:00 a 18:00",
+      "greeting": "¿Qué aparato está fallando?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿Qué marca es y qué hace (o deja de hacer)?",
+      "detailsExample": "lavadora LG que no centrifuga",
+      "depositPercent": 50,
+      "items": [
+        { "id": "diagnostico", "name": "Visita de diagnóstico", "price": 250, "keywords": ["diagnostico", "revisar", "no se que tiene", "visita"] },
+        { "id": "lavadora", "name": "Reparación de lavadora", "price": 750, "keywords": ["lavadora", "secadora", "no centrifuga", "no lava"] },
+        { "id": "refri", "name": "Carga de gas de refrigerador", "price": 900, "keywords": ["refri", "refrigerador", "nevera", "no enfria", "congelador"] }
+      ]
+    },
+    {
+      "id": "jardineria", "name": "Jardines Verdes", "owner": "Martín",
+      "category": "hogar", "profile": "emprendedor", "emoji": "🌿", "color": "#16a34a",
+      "about": "Mantenimiento de jardines, poda y pasto.",
+      "giro": "jardinería", "zone": "Tlalpan y Xochimilco", "hours": "Martes a domingo, 7:00 a 15:00",
+      "greeting": "¿Qué necesita tu jardín?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "depositPercent": 100,
+      "items": [
+        { "id": "pasto", "name": "Corte de pasto (hasta 50 m²)", "price": 350, "keywords": ["pasto", "cesped", "podar el pasto", "cortar"] },
+        { "id": "poda", "name": "Poda de árbol", "price": 800, "keywords": ["arbol", "poda", "ramas"] },
+        { "id": "mensual", "name": "Mantenimiento mensual", "price": 1200, "keywords": ["mensual", "mantenimiento", "cada mes"] }
+      ]
+    },
+    {
+      "id": "estetica", "name": "Estudio Bella", "owner": "Karla",
+      "category": "belleza", "profile": "formal", "emoji": "💇‍♀️", "color": "#db2777",
+      "about": "Salón de belleza con 8 años en la colonia Roma.",
+      "giro": "estética y salón de belleza", "zone": "Col. Roma Norte", "hours": "Martes a domingo, 10:00 a 20:00",
+      "greeting": "¿Qué servicio te gustaría reservar?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "slots": [{ "day": 1, "time": "11:00" }, { "day": 1, "time": "17:00" }, { "day": 2, "time": "13:00" }],
+      "depositPercent": 30,
+      "items": [
+        { "id": "corte", "name": "Corte de cabello", "price": 250, "keywords": ["corte", "cortar el cabello", "pelo"] },
+        { "id": "tinte", "name": "Tinte completo", "price": 750, "keywords": ["tinte", "color", "mechas", "rayitos", "decolor"] },
+        { "id": "peinado", "name": "Peinado para evento", "price": 450, "keywords": ["peinado", "boda", "xv", "graduacion", "evento"] },
+        { "id": "manicure", "name": "Manicure", "price": 220, "keywords": ["manicure", "unas", "gelish"] }
+      ]
+    },
+    {
+      "id": "barberia", "name": "Barbería El Bigote", "owner": "Memo",
+      "category": "belleza", "profile": "oficio", "emoji": "💈", "color": "#b91c1c",
+      "about": "Cortes clásicos y arreglo de barba.",
+      "giro": "barbería", "zone": "Col. Narvarte", "hours": "Lunes a sábado, 10:00 a 21:00",
+      "greeting": "¿Qué te hacemos hoy?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "slots": [{ "day": 0, "time": "18:00" }, { "day": 1, "time": "12:00" }, { "day": 1, "time": "19:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "corte", "name": "Corte de cabello", "price": 180, "keywords": ["corte", "pelo", "cabello", "fade", "degradado"] },
+        { "id": "combo", "name": "Corte y barba", "price": 250, "keywords": ["corte y barba", "combo", "ambos"] },
+        { "id": "barba", "name": "Arreglo de barba", "price": 150, "keywords": ["barba", "bigote", "afeitado", "rasurar"] }
+      ]
+    },
+    {
+      "id": "dental", "name": "Consultorio Dental Sonríe", "owner": "Dra. Paty",
+      "category": "salud", "profile": "formal", "emoji": "🦷", "color": "#0891b2",
+      "about": "Odontología general con factura. El anticipo evita citas perdidas.",
+      "giro": "odontología", "zone": "Col. Del Valle", "hours": "Lunes a viernes, 9:00 a 19:00; sábado, 9:00 a 14:00",
       "greeting": "Te ayudo a agendar tu cita. ¿Qué tratamiento buscas?",
       "steps": { "details": false, "quantity": false, "schedule": "cita" },
       "depositPercent": 30,
       "items": [
-        { "id": "valoracion", "name": "Consulta de valoración", "price": 400,
-          "keywords": ["valoración", "valoracion", "consulta", "revisión", "revision", "duele", "dolor", "muela"] },
-        { "id": "limpieza", "name": "Limpieza dental", "price": 700,
-          "keywords": ["limpieza", "sarro", "profilaxis"] },
-        { "id": "resina", "name": "Resina (por pieza)", "price": 900,
-          "keywords": ["resina", "caries", "empaste", "picado"] },
-        { "id": "blanqueamiento", "name": "Blanqueamiento", "price": 2500,
-          "keywords": ["blanque", "blanco", "manchas"] }
+        { "id": "valoracion", "name": "Consulta de valoración", "price": 400, "keywords": ["valoracion", "consulta", "revision", "duele", "dolor", "muela"] },
+        { "id": "limpieza", "name": "Limpieza dental", "price": 700, "keywords": ["limpieza", "sarro", "profilaxis"] },
+        { "id": "resina", "name": "Resina (por pieza)", "price": 900, "keywords": ["resina", "caries", "empaste", "picado"] },
+        { "id": "blanqueamiento", "name": "Blanqueamiento", "price": 2500, "keywords": ["blanque", "blanco", "manchas"] }
       ]
     },
     {
-      "id": "diseno",
-      "name": "Ana Ruiz · Diseño",
-      "owner": "Ana",
-      "profile": "freelance",
-      "emoji": "🎨",
-      "color": "#c026d3",
-      "about": "Diseñadora freelance: anticipo al empezar y el resto al entregar.",
-      "giro": "diseño gráfico freelance",
-      "zone": "remoto",
-      "greeting": "¿Qué necesitas para tu marca?",
-      "steps": { "details": true, "quantity": false, "schedule": "entrega" },
-      "detailsPrompt": "Cuéntame de tu negocio: ¿cómo se llama y qué estilo te gusta?",
-      "scheduleQuestion": "¿Para cuándo lo necesitas?",
-      "slots": [{ "day": 3 }, { "day": 5 }, { "day": 7 }],
-      "depositPercent": 50,
-      "items": [
-        { "id": "logo", "name": "Logo con 2 propuestas", "price": 1500,
-          "keywords": ["logo", "logotipo", "marca", "imagen"] },
-        { "id": "redes", "name": "Kit para redes (10 diseños)", "price": 1200,
-          "keywords": ["redes", "instagram", "facebook", "post", "publicacion", "publicación"] },
-        { "id": "menu", "name": "Menú o catálogo (hasta 4 páginas)", "price": 900,
-          "keywords": ["menú", "menu", "catálogo", "catalogo", "carta", "folleto"] }
-      ]
-    },
-    {
-      "id": "ingles",
-      "name": "Clases de inglés con Diego",
-      "owner": "Diego",
-      "profile": "emprendedor",
-      "emoji": "📚",
-      "color": "#ea580c",
-      "about": "Emprendimiento de clases en línea; cobra al reservar.",
-      "giro": "clases de inglés en línea",
-      "zone": "en línea",
-      "greeting": "¿Qué tipo de clase te interesa?",
+      "id": "fisio", "name": "Fisioterapia Movimiento", "owner": "Lic. Andrea",
+      "category": "salud", "profile": "formal", "emoji": "🧘", "color": "#7c3aed",
+      "about": "Rehabilitación y masaje terapéutico con fisioterapeuta titulada.",
+      "giro": "fisioterapia", "zone": "Col. Portales", "hours": "Lunes a viernes, 8:00 a 20:00",
+      "greeting": "¿En qué te podemos ayudar?",
       "steps": { "details": false, "quantity": false, "schedule": "cita" },
-      "scheduleQuestion": "¿Cuándo quieres tu primera clase?",
-      "slots": [{ "day": 1, "time": "18:00" }, { "day": 1, "time": "19:00" }, { "day": 2, "time": "18:00" }],
       "depositPercent": 100,
       "items": [
-        { "id": "suelta", "name": "Clase suelta (1 hora)", "price": 250,
-          "keywords": ["suelta", "una clase", "prueba", "probar"] },
-        { "id": "paquete", "name": "Paquete de 4 clases", "price": 900,
-          "keywords": ["paquete", "4 clases", "cuatro", "mes"] },
-        { "id": "conversacion", "name": "Club de conversación (1 hora)", "price": 150,
-          "keywords": ["conversación", "conversacion", "platicar", "hablar"] }
+        { "id": "valoracion", "name": "Valoración inicial", "price": 400, "keywords": ["valoracion", "primera vez", "revision", "duele", "dolor", "lesion"] },
+        { "id": "sesion", "name": "Sesión de fisioterapia", "price": 550, "keywords": ["sesion", "rehabilitacion", "terapia", "fisio"] },
+        { "id": "masaje", "name": "Masaje descontracturante", "price": 600, "keywords": ["masaje", "contractura", "espalda", "cuello", "estres"] }
       ]
     },
     {
-      "id": "postres",
-      "name": "Postres de Sofi",
-      "owner": "Sofi",
-      "profile": "joven",
-      "emoji": "🍰",
-      "color": "#db2777",
-      "about": "Sofi, 16 años, hornea en casa por encargo.",
-      "giro": "postres por encargo",
-      "zone": "CDMX",
-      "greeting": "¿Qué se te antoja encargar?",
-      "steps": { "details": false, "quantity": true, "schedule": "entrega" },
-      "scheduleQuestion": "¿Cuándo te lo entregamos?",
-      "depositPercent": 100,
-      "items": [
-        { "id": "pastel", "name": "Pastel de chocolate (10 personas)", "price": 380,
-          "keywords": ["pastel", "chocolate", "cumpleaños", "torta"] },
-        { "id": "cupcakes", "name": "Cupcakes (caja de 6)", "price": 240,
-          "keywords": ["cupcake", "panquecito", "mantecada"] },
-        { "id": "galletas", "name": "Galletas decoradas (docena)", "price": 220,
-          "keywords": ["galleta"] },
-        { "id": "gelatinas", "name": "Gelatinas de mosaico (docena)", "price": 180,
-          "keywords": ["gelatina", "mosaico"] }
-      ]
-    },
-    {
-      "id": "pulseras",
-      "name": "Pulseras de Mateo",
-      "owner": "Mateo",
-      "profile": "joven",
-      "emoji": "🧶",
-      "color": "#16a34a",
-      "about": "Mateo, 12 años. Los cobros llegan a la cuenta CoDi de su mamá.",
-      "giro": "pulseras y llaveros hechos a mano",
-      "zone": "CDMX",
-      "greeting": "¿Qué te gustaría llevar?",
-      "steps": { "details": false, "quantity": true, "schedule": null },
-      "depositPercent": 100,
-      "items": [
-        { "id": "nombre", "name": "Pulsera con nombre", "price": 45, "keywords": ["nombre", "letras", "personalizada"] },
-        { "id": "pulsera", "name": "Pulsera tejida", "price": 30, "keywords": ["pulsera", "tejida", "hilo"] },
-        { "id": "llavero", "name": "Llavero", "price": 40, "keywords": ["llavero", "llave"] }
-      ]
-    },
-    {
-      "id": "tamales",
-      "name": "Tamales Doña Mary",
-      "owner": "Doña Mary",
-      "profile": "mayor",
-      "emoji": "🫔",
-      "color": "#ca8a04",
-      "about": "Doña Mary, 68 años, vende afuera del metro desde hace 30 años.",
-      "giro": "tamales y atole",
-      "zone": "CDMX",
+      "id": "tamales", "name": "Tamales Doña Mary", "owner": "Doña Mary",
+      "category": "comida", "profile": "mayor", "emoji": "🫔", "color": "#ca8a04",
+      "about": "Tamales y atole hechos en casa desde hace 30 años.",
+      "giro": "tamales y atole", "zone": "Afuera del metro Portales", "hours": "Todos los días, 6:30 a 11:00",
       "greeting": "¿Qué te sirvo hoy?",
       "steps": { "details": false, "quantity": true, "schedule": null },
       "depositPercent": 100,
@@ -171,6 +204,152 @@
         { "id": "rajas", "name": "Tamal de rajas con queso", "price": 25, "keywords": ["rajas", "queso"] },
         { "id": "dulce", "name": "Tamal de dulce", "price": 22, "keywords": ["dulce", "rosa", "pasas"] },
         { "id": "atole", "name": "Atole (vaso)", "price": 20, "keywords": ["atole", "champurrado", "vaso"] }
+      ]
+    },
+    {
+      "id": "cocina", "name": "Cocina de la Abuela Chela", "owner": "Doña Chela",
+      "category": "comida", "profile": "mayor", "emoji": "🍲", "color": "#ea580c",
+      "about": "Comida casera para llevar. Pedidos con un día de anticipación.",
+      "giro": "comida casera", "zone": "Col. Álamos, entrega en 3 km", "hours": "Lunes a viernes, 12:00 a 17:00",
+      "greeting": "¿Qué se te antoja?",
+      "steps": { "details": false, "quantity": true, "schedule": "entrega" },
+      "scheduleQuestion": "¿Cuándo te lo llevamos?",
+      "slots": [{ "day": 1, "time": "13:00 a 14:00" }, { "day": 1, "time": "15:00 a 16:00" }, { "day": 2, "time": "13:00 a 14:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "corrida", "name": "Comida corrida", "price": 95, "keywords": ["corrida", "comida del dia", "menu", "guisado"] },
+        { "id": "pozole", "name": "Pozole (litro)", "price": 160, "keywords": ["pozole"] },
+        { "id": "enchiladas", "name": "Enchiladas verdes (orden)", "price": 110, "keywords": ["enchilada"] }
+      ]
+    },
+    {
+      "id": "postres", "name": "Postres de Sofi", "owner": "Sofi",
+      "category": "comida", "profile": "joven", "emoji": "🍰", "color": "#e11d48",
+      "about": "Repostería casera por encargo. Sofi tiene 16 años y hornea con su familia.",
+      "giro": "postres por encargo", "zone": "Coyoacán, entrega a domicilio", "hours": "Pedidos todos los días, entregas de 12:00 a 19:00",
+      "greeting": "¿Qué se te antoja encargar?",
+      "steps": { "details": false, "quantity": true, "schedule": "entrega" },
+      "scheduleQuestion": "¿Cuándo te lo entregamos?",
+      "depositPercent": 100,
+      "items": [
+        { "id": "pastel", "name": "Pastel de chocolate (10 personas)", "price": 380, "keywords": ["pastel", "chocolate", "cumpleanos", "torta"] },
+        { "id": "cupcakes", "name": "Cupcakes (caja de 6)", "price": 240, "keywords": ["cupcake", "panquecito", "mantecada"] },
+        { "id": "galletas", "name": "Galletas decoradas (docena)", "price": 220, "keywords": ["galleta"] },
+        { "id": "gelatinas", "name": "Gelatinas de mosaico (docena)", "price": 180, "keywords": ["gelatina", "mosaico"] }
+      ]
+    },
+    {
+      "id": "ingles", "name": "Inglés con Diego", "owner": "Diego",
+      "category": "educacion", "profile": "emprendedor", "emoji": "🗣️", "color": "#f97316",
+      "about": "Clases de inglés en línea para adultos y adolescentes.",
+      "giro": "clases de inglés en línea", "zone": "En línea (Zoom o Meet)", "hours": "Lunes a viernes, 7:00 a 21:00",
+      "greeting": "¿Qué tipo de clase te interesa?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "scheduleQuestion": "¿Cuándo quieres tu primera clase?",
+      "slots": [{ "day": 1, "time": "18:00" }, { "day": 1, "time": "19:00" }, { "day": 2, "time": "18:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "suelta", "name": "Clase suelta (1 hora)", "price": 250, "keywords": ["suelta", "una clase", "prueba", "probar"] },
+        { "id": "paquete", "name": "Paquete de 4 clases", "price": 900, "keywords": ["paquete", "4 clases", "cuatro clases", "mes"] },
+        { "id": "conversacion", "name": "Club de conversación (1 hora)", "price": 150, "keywords": ["conversacion", "platicar", "hablar ingles", "speaking"] }
+      ]
+    },
+    {
+      "id": "regularizacion", "name": "Regularización Profe Luis", "owner": "Profe Luis",
+      "category": "educacion", "profile": "freelance", "emoji": "📐", "color": "#2563eb",
+      "about": "Matemáticas y física para secundaria y prepa, presencial o en línea.",
+      "giro": "regularización escolar", "zone": "Iztacalco o en línea", "hours": "Lunes a sábado, 15:00 a 21:00",
+      "greeting": "¿En qué materia necesitas apoyo?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿De qué grado es y qué tema están viendo?",
+      "detailsExample": "2.º de secundaria, ecuaciones de primer grado",
+      "slots": [{ "day": 1, "time": "16:00" }, { "day": 1, "time": "18:00" }, { "day": 2, "time": "17:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "clase", "name": "Clase de 1 hora", "price": 220, "keywords": ["clase", "matematicas", "mate", "fisica", "algebra", "tarea"] },
+        { "id": "paquete", "name": "Paquete de 8 clases", "price": 1600, "keywords": ["paquete", "8 clases", "ocho", "mes completo"] },
+        { "id": "examen", "name": "Preparación para examen de admisión", "price": 900, "keywords": ["examen", "comipems", "admision", "prepa", "unam", "ipn"] }
+      ]
+    },
+    {
+      "id": "diseno", "name": "Ana Ruiz · Diseño", "owner": "Ana",
+      "category": "creativos", "profile": "freelance", "emoji": "🎨", "color": "#c026d3",
+      "about": "Diseñadora de marca freelance: anticipo al empezar y el resto al entregar.",
+      "giro": "diseño gráfico freelance", "zone": "Remoto", "hours": "Lunes a viernes, 10:00 a 18:00",
+      "greeting": "¿Qué necesitas para tu marca?",
+      "steps": { "details": true, "quantity": false, "schedule": "entrega" },
+      "detailsPrompt": "Cuéntame de tu negocio: ¿cómo se llama y qué estilo te gusta?",
+      "detailsExample": "cafetería La Esquina, estilo vintage",
+      "scheduleQuestion": "¿Para cuándo lo necesitas?",
+      "slots": [{ "day": 3 }, { "day": 5 }, { "day": 7 }],
+      "depositPercent": 50,
+      "items": [
+        { "id": "logo", "name": "Logo con 2 propuestas", "price": 1500, "keywords": ["logo", "logotipo", "marca", "imagen"] },
+        { "id": "redes", "name": "Kit para redes (10 diseños)", "price": 1200, "keywords": ["redes", "instagram", "facebook", "post", "publicacion"] },
+        { "id": "menu", "name": "Menú o catálogo (hasta 4 páginas)", "price": 900, "keywords": ["menu", "catalogo", "carta", "folleto"] }
+      ]
+    },
+    {
+      "id": "foto", "name": "Fotografía Alma", "owner": "Alma",
+      "category": "creativos", "profile": "freelance", "emoji": "📷", "color": "#334155",
+      "about": "Retratos, eventos y fotos de producto con entrega digital.",
+      "giro": "fotografía", "zone": "CDMX y área metropolitana", "hours": "Martes a domingo, 9:00 a 20:00",
+      "greeting": "¿Qué tipo de sesión buscas?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿Para qué ocasión es y dónde sería?",
+      "detailsExample": "fotos de mi familia en el parque de los Viveros",
+      "slots": [{ "day": 2, "time": "10:00" }, { "day": 3, "time": "17:00" }, { "day": 6, "time": "11:00" }],
+      "depositPercent": 50,
+      "items": [
+        { "id": "retrato", "name": "Sesión de retrato (1 hora)", "price": 1500, "keywords": ["retrato", "sesion", "familia", "pareja", "book"] },
+        { "id": "evento", "name": "Cobertura de evento (4 horas)", "price": 4500, "keywords": ["evento", "boda", "xv", "bautizo", "fiesta"] },
+        { "id": "producto", "name": "Fotos de producto (10 fotos)", "price": 1200, "keywords": ["producto", "catalogo", "tienda", "ecommerce"] }
+      ]
+    },
+    {
+      "id": "huellitas", "name": "Huellitas Estética Canina", "owner": "Paola",
+      "category": "mascotas", "profile": "emprendedor", "emoji": "🐶", "color": "#9333ea",
+      "about": "Baño y corte para perros, con recolección a domicilio.",
+      "giro": "estética canina", "zone": "Col. Nápoles y alrededores", "hours": "Lunes a sábado, 9:00 a 18:00",
+      "greeting": "¿Qué servicio necesita tu perrito?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "depositPercent": 100,
+      "items": [
+        { "id": "chico", "name": "Baño perro chico", "price": 250, "keywords": ["chico", "chihuahua", "pequeno", "yorki", "poodle"] },
+        { "id": "mediano", "name": "Baño perro mediano", "price": 320, "keywords": ["mediano", "beagle", "schnauzer", "cocker"] },
+        { "id": "grande", "name": "Baño perro grande", "price": 420, "keywords": ["grande", "labrador", "golden", "pastor", "husky"] },
+        { "id": "unas", "name": "Corte de uñas", "price": 80, "keywords": ["unas", "corte de unas"] }
+      ]
+    },
+    {
+      "id": "mecanico", "name": "Taller Móvil Chuy", "owner": "Don Chuy",
+      "category": "autos", "profile": "oficio", "emoji": "🛠️", "color": "#57534e",
+      "about": "Mecánico a domicilio: afinación, frenos y diagnóstico.",
+      "giro": "mecánica automotriz a domicilio", "zone": "Zona oriente de la CDMX", "hours": "Lunes a sábado, 8:00 a 18:00",
+      "greeting": "¿Qué le pasa a tu auto o qué servicio necesitas?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "¿Qué marca, modelo y año es tu auto?",
+      "detailsExample": "Nissan Versa 2017",
+      "depositPercent": 50,
+      "items": [
+        { "id": "afinacion", "name": "Afinación mayor", "price": 1200, "keywords": ["afinacion", "bujias", "tirones", "jalonea"] },
+        { "id": "aceite", "name": "Cambio de aceite y filtro", "price": 650, "keywords": ["aceite", "filtro"] },
+        { "id": "frenos", "name": "Cambio de balatas", "price": 900, "keywords": ["freno", "balata", "rechina", "chilla"] },
+        { "id": "escaner", "name": "Diagnóstico con escáner", "price": 350, "keywords": ["diagnostico", "escaner", "check engine", "testigo", "foco del tablero", "no arranca"] }
+      ]
+    },
+    {
+      "id": "pulseras", "name": "Pulseras de Mateo", "owner": "Mateo",
+      "category": "regalos", "profile": "joven", "emoji": "🧶", "color": "#059669",
+      "about": "Pulseras y llaveros tejidos a mano por Mateo, de 12 años. Cobra a la cuenta de su mamá.",
+      "giro": "pulseras y llaveros hechos a mano", "zone": "Entrega en la colonia o envío", "hours": "Todos los días",
+      "greeting": "¿Qué te gustaría llevar?",
+      "steps": { "details": false, "quantity": true, "schedule": null },
+      "depositPercent": 100,
+      "items": [
+        { "id": "nombre", "name": "Pulsera con nombre", "price": 45, "keywords": ["nombre", "letras", "personalizada", "pulsera con nombre", "pulseras con nombre", "con su nombre"] },
+        { "id": "pulsera", "name": "Pulsera tejida", "price": 30, "keywords": ["pulsera", "tejida", "hilo"] },
+        { "id": "llavero", "name": "Llavero", "price": 40, "keywords": ["llavero"] }
       ]
     }
   ]

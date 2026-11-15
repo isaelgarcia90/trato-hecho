@@ -6,157 +6,234 @@
   <title>Panel del negocio · Trato Hecho</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-  <main class="panel">
-    <header class="panel-top">
-      <a class="logo" href="/"><span class="mark">🤝</span><span>Trato Hecho <small>· Panel</small></span></a>
-      <span class="spacer"></span>
-      <select id="filter" aria-label="Negocio"><option value="">Todos los negocios</option></select>
-      <a class="link" href="/#negocios">Abrir un chat ›</a>
-      <span id="mode" class="badge"></span>
-    </header>
-    <section class="stats">
-      <div class="stat"><span class="ic">🤝</span><b id="s-citas">0</b><span>Tratos cerrados</span></div>
-      <div class="stat"><span class="ic">💰</span><b id="s-cobrado">$0</b><span>Cobrado con CoDi</span></div>
-      <div class="stat"><span class="ic">⏳</span><b id="s-pend">$0</b><span>Por cobrar</span></div>
-      <div class="stat good"><span class="ic">✨</span><b id="s-ahorro">$0</b><span>Ahorro vs. tarjeta (~3%). Comisiones pagadas: $0</span></div>
+<body class="app">
+  <header class="app-head">
+    <div class="in">
+      <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho <small>· Panel</small></a>
+      <div class="right">
+        <span id="mode" class="badge"></span>
+        <a class="btn sm" href="/#explorar">Ver sitio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="app-title">
+      <div>
+        <h1 id="title">Conversaciones y cobros</h1>
+        <p>Se actualiza en vivo cuando un cliente escribe o paga.</p>
+      </div>
+      <select class="select" id="filter" aria-label="Negocio"><option value="">Todos los negocios</option></select>
+    </div>
+
+    <section class="kpis">
+      <div class="kpi"><span class="l">Tratos cerrados</span><b id="k-deals">0</b><small>Con pago confirmado</small></div>
+      <div class="kpi"><span class="l">Cobrado con CoDi</span><b id="k-paid">$0</b><small>Directo a tu cuenta</small></div>
+      <div class="kpi"><span class="l">Por cobrar</span><b id="k-pending">$0</b><small>Anticipos y restantes</small></div>
+      <div class="kpi accent"><span class="l">Ahorro en comisiones</span><b id="k-saved">$0</b><small>Contra ~3% con tarjeta</small></div>
     </section>
-    <section id="jobs" class="jobs"></section>
+
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="panel-tools">
+      <label class="sr-only" for="search">Buscar</label>
+      <input class="input" id="search" type="search" placeholder="Buscar por servicio, celular o mensaje">
+    </div>
+    <section id="jobs" class="jobs" aria-live="polite"></section>
   </main>
+
 <script>
 const jobs = new Map();
 const $jobs = document.getElementById('jobs');
 const $filter = document.getElementById('filter');
+const $search = document.getElementById('search');
 const money = n => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const STATUS = {
-  cotizando: 'Cotizando', esperando_anticipo: 'Esperando anticipo', esperando_pago: 'Esperando pago',
+  cotizando: 'En conversación', esperando_anticipo: 'Esperando anticipo', esperando_pago: 'Esperando pago',
   confirmada: 'Confirmada', esperando_restante: 'Esperando pago final', pagada: 'Pagada',
 };
 const KIND = { anticipo: 'Anticipo', pago: 'Pago', restante: 'Restante' };
 const CARD_FEE = 0.03; // referencia aproximada de comisión con terminal de tarjeta
-const visible = j => !$filter.value || j.businessId === $filter.value;
-
-function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+const TABS = [
+  ['all', 'Todas', () => true],
+  ['attn', 'Requieren atención', j => j.needsHuman],
+  ['chat', 'En conversación', j => j.status === 'cotizando'],
+  ['due', 'Por cobrar', j => j.status.startsWith('esperando')],
+  ['ok', 'Confirmadas', j => j.status === 'confirmada'],
+  ['paid', 'Pagadas', j => j.status === 'pagada'],
+];
+let tab = 'all';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ago = ts => {
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return 'ahora';
+  if (m < 60) return `hace ${m} min`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `hace ${h} h` : new Date(ts).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+};
+const byBiz = j => !$filter.value || j.businessId === $filter.value;
+const bySearch = j => {
+  const q = $search.value.trim().toLowerCase();
+  if (!q) return true;
+  return [j.business?.name, j.quote?.items?.[0]?.concept, j.phone, j.description, ...j.messages.map(m => m.text)]
+    .join(' ').toLowerCase().includes(q);
+};
+const tabFn = id => TABS.find(t => t[0] === id)[2];
 
 function card(j) {
   const el = document.createElement('article');
-  el.className = 'job';
+  el.className = 'job' + (j.needsHuman ? ' attn' : '');
   el.id = 'job-' + j.id;
   el.style.setProperty('--c', j.business?.color || '#0f766e');
-  const charges = (j.charges || []).map(c => `
-    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? '📲 app del banco' : '📷 QR'}${c.simulated ? ' · simulado' : ''}</span>
-      <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} · ${esc(c.status)}
-      ${c.simulated && c.status === 'pendiente' ? `<button data-sim="${c.id}">Simular pago</button>` : ''}</span></li>`).join('');
-  const extras = (j.extras || []).map(x => `<li><span>➕ Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
-  const canCharge = j.quote && j.totals.pending > 0 && !['cotizando', 'esperando_anticipo', 'esperando_pago'].includes(j.status);
   const line = j.quote?.items?.[0];
-  const title = line ? (line.quantity > 1 ? line.quantity + ' × ' : '') + line.concept : 'Conversación en curso';
+  const title = line ? (line.quantity > 1 ? line.quantity + ' × ' : '') + line.concept : 'Conversación sin cotizar';
+  const lastClient = [...j.messages].reverse().find(m => m.from === 'cliente');
   const pct = j.totals.total > 0 ? Math.min(100, Math.round((j.totals.paid / j.totals.total) * 100)) : 0;
+  const canCharge = j.quote && j.totals.pending > 0 && ['confirmada', 'esperando_restante'].includes(j.status);
+  const charges = (j.charges || []).map(c => `
+    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · prueba' : ''}</span>
+      <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} · ${esc(c.status)}
+      ${c.simulated && c.status === 'pendiente' ? `<button class="btn sm" data-sim="${c.id}">Simular pago</button>` : ''}</span></li>`).join('');
+  const extras = (j.extras || []).map(x => `<li><span>Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
+
   el.innerHTML = `
     <div class="jh">
-      <span class="emoji">${esc(j.business?.emoji || '🤝')}</span>
-      <div class="t"><small>${esc(j.business?.name)}</small><b>${esc(title)}</b></div>
+      <span class="tile">${esc(j.business?.emoji || '🤝')}</span>
+      <div class="t"><small>${esc(j.business?.name)} · ${ago(j.messages.at(-1)?.at || j.createdAt)}</small><b>${esc(title)}</b></div>
       <span class="badge ${j.status}">${STATUS[j.status] || esc(j.status)}</span>
     </div>
+    ${j.needsHuman ? `<div class="alert">El cliente pidió hablar contigo. Respóndele aquí abajo.</div>` : ''}
     <div class="meta">
-      ${j.slot ? (j.business?.scheduleLabel === 'Entrega' ? '📦 ' : '📅 ') + esc(j.business?.scheduleLabel || 'Cita') + ': ' + esc(j.slot) + '<br>' : ''}
-      ${j.phone ? '📱 ' + esc(j.phone) + '<br>' : ''}
-      ${j.description ? '💬 “' + esc(j.description) + '”' : ''}
+      ${j.slot ? `<span>${j.business?.scheduleLabel === 'Entrega' ? '📦' : '📅'} ${esc(j.business?.scheduleLabel || 'Cita')}: ${esc(j.slot)}</span>` : ''}
+      ${j.phone ? `<span>📱 ${esc(j.phone)}</span>` : ''}
+      ${j.description ? `<span>📝 “${esc(j.description)}”</span>` : ''}
     </div>
-    ${j.quote ? `
-    <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
-    <div class="money"><span>Total <b>${money(j.totals.total)}</b></span><span class="ok">Pagado ${money(j.totals.paid)}</span><span class="warn">Pendiente ${money(j.totals.pending)}</span></div>` : ''}
+    ${lastClient ? `<div class="last"><b>Cliente:</b> ${esc(lastClient.text.slice(0, 140))}</div>` : ''}
+    ${j.quote ? `<div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+      <div class="money"><span>Total <b>${money(j.totals.total)}</b></span><span class="ok">Pagado ${money(j.totals.paid)}</span><span class="warn">Pendiente ${money(j.totals.pending)}</span></div>` : ''}
     ${extras || charges ? `<ul>${extras}${charges}</ul>` : ''}
-    ${j.quote && j.status !== 'pagada' ? `
-    <div class="row">
-      <input data-concept placeholder="Cargo extra (ej. refacción)" aria-label="Concepto del cargo extra">
-      <input data-amount type="number" min="1" step="1" placeholder="$" style="max-width:90px" aria-label="Monto">
-      <button data-extra>Agregar</button>
-    </div>` : ''}
-    ${canCharge ? `<div class="row">
-      <button class="primary" data-charge="push">Cobrar restante a su app</button>
-      <button data-charge="qr">Cobrar con QR</button></div>` : ''}
+    <div class="row" data-reply-row ${j.needsHuman ? '' : 'hidden'}>
+      <input class="input" data-reply placeholder="Escribe tu respuesta al cliente" aria-label="Respuesta al cliente">
+      <button class="btn primary sm" data-send>Enviar</button>
+    </div>
+    ${canCharge ? `<div class="actions">
+      <button class="btn primary sm" data-charge="push">Cobrar restante a su app</button>
+      <button class="btn sm" data-charge="qr">Cobrar con QR</button></div>` : ''}
+    <div class="actions">
+      ${!j.needsHuman ? '<button class="btn sm" data-open-reply>Escribir al cliente</button>' : '<button class="btn sm" data-resolve>Marcar como atendido</button>'}
+      ${j.quote && j.status !== 'pagada' ? '<button class="btn sm" data-open-extra>Agregar cargo extra</button>' : ''}
+      <a class="btn ghost sm" href="/chat?j=${encodeURIComponent(j.id)}" target="_blank" rel="noopener">Ver chat</a>
+    </div>
+    <div class="row" data-extra-row hidden>
+      <input class="input" data-concept placeholder="Concepto (ej. refacción)" aria-label="Concepto del cargo extra">
+      <input class="input" data-amount type="number" min="1" step="1" placeholder="$" style="max-width:96px" aria-label="Monto">
+      <button class="btn sm" data-extra>Agregar</button>
+    </div>
     <div class="err" data-err></div>`;
 
-  el.querySelectorAll('[data-sim]').forEach(b => b.onclick = async () => {
-    b.disabled = true; await fetch('/api/dev/simulate-payment/' + b.dataset.sim, { method: 'POST' });
-  });
-  el.querySelector('[data-extra]')?.addEventListener('click', async () => {
+  const err = el.querySelector('[data-err]');
+  el.querySelectorAll('[data-sim]').forEach(b => b.onclick = async () => { b.disabled = true; await fetch('/api/dev/simulate-payment/' + b.dataset.sim, { method: 'POST' }); });
+  el.querySelector('[data-open-reply]')?.addEventListener('click', () => { el.querySelector('[data-reply-row]').hidden = false; el.querySelector('[data-reply]').focus(); });
+  el.querySelector('[data-open-extra]')?.addEventListener('click', () => { el.querySelector('[data-extra-row]').hidden = false; el.querySelector('[data-concept]').focus(); });
+  el.querySelector('[data-resolve]')?.addEventListener('click', () => action(j.id, 'resolve', {}, err));
+  const sendReply = async () => {
+    const text = el.querySelector('[data-reply]').value.trim();
+    if (!text) { err.textContent = 'Escribe un mensaje.'; return; }
+    await action(j.id, 'reply', { text }, err);
+  };
+  el.querySelector('[data-send]').onclick = sendReply;
+  el.querySelector('[data-reply]').onkeydown = e => { if (e.key === 'Enter') sendReply(); };
+  el.querySelector('[data-extra]').onclick = async () => {
     const concept = el.querySelector('[data-concept]').value.trim();
     const amount = Number(el.querySelector('[data-amount]').value);
-    const err = el.querySelector('[data-err]');
     if (!concept || !(amount > 0)) { err.textContent = 'Escribe un concepto y un monto mayor a 0.'; return; }
-    err.textContent = '';
     await action(j.id, 'extras', { concept, amount }, err);
-  });
+  };
   el.querySelectorAll('[data-charge]').forEach(b => b.onclick = async () => {
     b.disabled = true;
-    await action(j.id, 'charge', { method: b.dataset.charge }, el.querySelector('[data-err]'));
+    await action(j.id, 'charge', { method: b.dataset.charge }, err);
     b.disabled = false;
   });
   return el;
 }
 
 async function action(id, kind, body, errEl) {
+  errEl.textContent = '';
   const r = await fetch(`/api/panel/jobs/${id}/${kind}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   });
-  const data = await r.json();
-  if (!r.ok) { errEl.textContent = data.error || 'Error'; return; }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { errEl.textContent = data.error || 'No se pudo completar. Intenta de nuevo.'; return; }
   upsert(data);
 }
 
 function upsert(j, flash) {
   if (!j || j.messages?.length <= 1) return;
   jobs.set(j.id, j);
+  const visible = byBiz(j) && bySearch(j) && tabFn(tab)(j);
   const old = document.getElementById('job-' + j.id);
-  if (!visible(j)) { old?.remove(); stats(); return; }
+  if (!visible) { old?.remove(); refresh(false); return; }
+  // No reemplazar la tarjeta mientras el negocio escribe en ella.
+  if (old && old.contains(document.activeElement) && document.activeElement.tagName === 'INPUT' && !flash) { refresh(false); return; }
   const fresh = card(j);
   if (old) old.replaceWith(fresh); else $jobs.prepend(fresh);
   if (flash) { fresh.classList.add('flash'); setTimeout(() => fresh.classList.remove('flash'), 2500); }
-  stats();
+  refresh(false);
 }
 
-function stats() {
-  let citas = 0, cobrado = 0, pend = 0, shown = 0;
-  for (const j of jobs.values()) {
-    if (!visible(j)) continue;
-    shown++;
-    if (['confirmada', 'esperando_restante', 'pagada'].includes(j.status)) citas++;
-    cobrado += j.totals?.paid || 0;
-    if (j.status !== 'cotizando') pend += j.totals?.pending || 0;
+function renderAll() {
+  $jobs.innerHTML = '';
+  [...jobs.values()].sort((a, b) => (a.messages.at(-1)?.at || 0) - (b.messages.at(-1)?.at || 0))
+    .filter(j => byBiz(j) && bySearch(j) && tabFn(tab)(j)).forEach(j => $jobs.prepend(card(j)));
+  refresh(true);
+}
+
+function refresh(allowEmpty) {
+  const scope = [...jobs.values()].filter(byBiz);
+  let deals = 0, paid = 0, pending = 0;
+  for (const j of scope) {
+    if (['confirmada', 'esperando_restante', 'pagada'].includes(j.status)) deals++;
+    paid += j.totals?.paid || 0;
+    if (j.status !== 'cotizando') pending += j.totals?.pending || 0;
   }
-  document.getElementById('s-citas').textContent = citas;
-  document.getElementById('s-cobrado').textContent = money(cobrado);
-  document.getElementById('s-pend').textContent = money(pend);
-  document.getElementById('s-ahorro').textContent = money(cobrado * CARD_FEE);
-  if (!shown) {
+  document.getElementById('k-deals').textContent = deals;
+  document.getElementById('k-paid').textContent = money(paid);
+  document.getElementById('k-pending').textContent = money(pending);
+  document.getElementById('k-saved').textContent = money(paid * CARD_FEE);
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  for (const [id, label, fn] of TABS) {
+    const b = document.createElement('button');
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(id === tab));
+    const n = scope.filter(fn).length;
+    b.innerHTML = `${label} <span class="n ${id === 'attn' && n ? 'attn' : ''}">${n}</span>`;
+    b.onclick = () => { tab = id; renderAll(); };
+    tabs.append(b);
+  }
+  if (!$jobs.querySelector('.job')) {
     if (!$jobs.querySelector('.empty')) {
-      $jobs.innerHTML = `<div class="empty"><div class="big">💬</div><h3>Aún no hay conversaciones</h3>
-        <div>Abre un chat como si fueras cliente; aquí verás cada trato y cada pago en vivo.</div>
-        <div class="cta"><a class="btn" href="/#negocios">Abrir un chat de ejemplo</a></div></div>`;
+      $jobs.innerHTML = jobs.size
+        ? '<div class="empty"><div style="font-size:34px">🗂️</div><h3>Nada por aquí</h3><p>No hay conversaciones con este filtro.</p></div>'
+        : '<div class="empty"><div style="font-size:34px">💬</div><h3>Aún no hay conversaciones</h3><p>Cuando un cliente te escriba, verás aquí su cotización y sus pagos en tiempo real.</p><a class="btn primary" href="/#explorar">Abrir un chat de prueba</a></div>';
     }
   } else $jobs.querySelector('.empty')?.remove();
 }
 
-$filter.onchange = () => {
-  $jobs.innerHTML = '';
-  [...jobs.values()].sort((a, b) => a.createdAt - b.createdAt).forEach(j => upsert(j));
-  stats();
-};
+$filter.onchange = renderAll;
+$search.oninput = renderAll;
 
 async function start() {
   const s = await (await fetch('/api/status')).json();
   for (const b of s.businesses) $filter.add(new Option(`${b.emoji} ${b.name}`, b.id));
   const mode = document.getElementById('mode');
-  mode.textContent = s.mode === 'simulado' ? 'Modo simulado' : 'pey producción';
+  mode.textContent = s.mode === 'simulado' ? 'Modo de prueba' : 'Cobros reales';
   mode.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');
   const list = await (await fetch('/api/panel/jobs')).json();
-  list.reverse().forEach(j => upsert(j));
-  stats();
+  list.forEach(j => j.messages.length > 1 && jobs.set(j.id, j));
+  renderAll();
   const es = new EventSource('/api/events');
   es.onmessage = e => {
     const evt = JSON.parse(e.data);
@@ -164,7 +241,13 @@ async function start() {
       const prev = jobs.get(evt.jobId);
       upsert(evt.job, prev && prev.totals?.paid !== evt.job.totals?.paid);
     }
+    if (evt.type === 'message') {
+      const j = jobs.get(evt.jobId);
+      if (j && !j.messages.some(m => m.id === evt.message.id)) upsert({ ...j, messages: [...j.messages, evt.message] });
+      else if (!j && evt.message.from === 'cliente') fetch('/api/jobs/' + evt.jobId).then(r => r.ok && r.json()).then(x => x && upsert(x));
+    }
   };
+  setInterval(() => { if (!document.activeElement || document.activeElement.tagName !== 'INPUT') renderAll(); }, 60000);
 }
 start();
 </script>

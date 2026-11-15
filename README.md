@@ -6,7 +6,46 @@ negocios de barrio, jóvenes que venden por encargo o personas mayores que vende
 **cobra con CoDi** usando el API de pey. Cuando el banco confirma el pago, el trato queda cerrado y el negocio lo ve
 en su panel en tiempo real.
 
-Proyecto para el **Cursor Hackatón México 2026** (CDMX).
+Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
+
+## Para los jueces
+
+| | |
+|---|---|
+| **Demo en vivo** | https://trato-hecho-l22c.onrender.com |
+| **Panel del negocio** | https://trato-hecho-l22c.onrender.com/panel |
+| **Repositorio** | https://github.com/isaelgarcia90/trato-hecho |
+
+> El servidor está en el plan gratis de Render: si nadie lo ha usado en los últimos 15 minutos, la primera carga
+> tarda unos 50 segundos en despertar.
+
+**Pruébalo en 2 minutos**
+1. En el inicio, busca un negocio (por ejemplo "plomero" o "tamales") o filtra por categoría, y abre su chat.
+2. Escribe con tus palabras, por ejemplo: `se me tapó el baño desde ayer en la noche`. También puedes probar
+   mensajes incoherentes (`asdfgh`, `quiero una pizza`, `no sé`): el agente explica qué le falta y pide una
+   respuesta válida.
+3. Elige horario, escribe un celular de 10 dígitos (o `QR`) y pide el cobro.
+4. Toca **"Simular que pagué"**: el chat y el panel cambian a "Pagado" al instante.
+5. En el panel puedes responder al cliente, agregar un cargo extra y cobrar el restante.
+
+### Estado de la integración con pey: lista, en modo de prueba
+
+La demo en vivo corre en **modo de prueba** (`PEY_MOCK=1`): los cobros no llegan a ningún banco y el botón
+"Simular que pagué" hace el papel del webhook de pey. Esto **no es por falta de integración**, sino porque la
+cuenta CoDi todavía no está activa:
+
+- **Configurado en producción:** API key de pey, webhook `https://trato-hecho-l22c.onrender.com/webhooks/pey` con
+  su secreto y la cuenta bancaria (CLABE) dada de alta en el portal de pey.
+- **Lo que pasó al probar:** con la app en modo producción, pey **aceptó la API key** y recibió los cobros bien
+  armados (push y QR), pero respondió `400: API key does not have CoDi enabled`.
+- **La causa:** la cuenta bancaria se dio de alta el 15 de noviembre de 2026 y está en estado **Pending**. El portal
+  indica que se activa en **hasta 5 días hábiles**. No hubo tiempo de usar una CLABE pre-autorizada del evento
+  antes de dejar la sede.
+- **Lo que sí se verificó en producción:** el webhook rechaza avisos sin firma o con firma falsa
+  (`400 invalid signature`), y el simulador de pagos queda bloqueado (`403`) fuera del modo de prueba.
+- **Para pasar a cobros reales** solo hay que quitar `PEY_MOCK` en Render cuando pey active la cuenta; no hace
+  falta cambiar código. El primer cobro real será de $0.01 (`DEMO_CHARGE_AMOUNT`), antes de la entrega final del
+  12 de diciembre.
 
 ## El problema
 
@@ -19,22 +58,38 @@ Proyecto para el **Cursor Hackatón México 2026** (CDMX).
 ## Un mismo agente, distintos negocios
 
 Cada negocio se configura en [`config/businesses.json`](config/businesses.json): nombre, catálogo con precios fijos,
-pasos del flujo, porcentaje de anticipo y nombre del agente (por defecto, Clarito). El demo trae tres:
+pasos del flujo, porcentaje de anticipo y nombre del agente (por defecto, Clarito). El catálogo de ejemplo trae
+**21 negocios en 9 categorías**: hogar y reparaciones (plomería, electricidad, cerrajería, pintura, limpieza,
+línea blanca, jardinería), belleza, salud, comida, clases, diseño y fotografía, mascotas, autos y regalos.
+Cubren oficios independientes, negocios establecidos, freelancers, emprendimientos, jóvenes y negocios familiares.
 
-| Perfil | Negocio de ejemplo | Flujo | Cobro |
-|---|---|---|---|
-| Oficios | Plomería Don Beto | Servicio → detalles → **cita** → celular | Anticipo del 50% y el resto al terminar (con extras desde el panel) |
-| Negocio formal | Consultorio Dental Sonríe | Tratamiento → **cita** → celular | Anticipo del 30% |
-| Freelancers | Ana Ruiz · Diseño | Paquete → detalles → **fecha de entrega** → celular | Anticipo del 50% |
-| Emprendedores | Clases de inglés con Diego | Clase o paquete → **cita** → celular | Pago completo |
-| Jóvenes y niños | Postres de Sofi (16 años) | Producto → **cantidad** → **fecha de entrega** → celular | Pago completo |
-| Jóvenes y niños | Pulseras de Mateo (12 años) | Producto → **cantidad** → celular | Pago completo; cobra a la cuenta de su mamá |
-| Tercera edad | Tamales Doña Mary | Producto → **cantidad** → celular | Pago completo, venta directa |
+| Flujo | Ejemplo | Cobro |
+|---|---|---|
+| Servicio → detalles → **cita** → celular | Plomería Don Beto | Anticipo del 50% y el resto al terminar (con extras desde el panel) |
+| Servicio → **cita** → celular | Consultorio Dental Sonríe | Anticipo del 30% |
+| Paquete → detalles → **fecha de entrega** → celular | Ana Ruiz · Diseño | Anticipo del 50% |
+| Producto → **cantidad** → **entrega** → celular | Postres de Sofi | Pago completo |
+| Producto → **cantidad** → celular (o QR) | Tamales Doña Mary | Pago completo, venta directa |
 
 Pasos configurables por negocio (`steps`): `details` (pedir detalles), `quantity` (pedir cantidad) y
 `schedule` (`"cita"`, `"entrega"` o `null`). Con `depositPercent` menor a 100 se cobra un anticipo.
-Opcionales: `slots` (días y horas a ofrecer), `scheduleQuestion`, `detailsPrompt`, `agentName`, `emoji`, `color`,
-`about` y `profile`.
+Opcionales: `slots` (días y horas; `day: 0` es hoy), `scheduleQuestion`, `detailsPrompt`, `detailsExample`,
+`agentName`, `emoji`, `color`, `about`, `zone`, `hours`, `category` y `profile`.
+
+## Cómo conversa el agente
+
+El agente funciona con reglas ([`src/nlu.js`](src/nlu.js)); un LLM es opcional. En cada paso valida la respuesta:
+
+- **Texto sin sentido** ("asdfgh", "???"): dice que no entendió y pide un dato concreto con ejemplos.
+- **Algo que el negocio no ofrece** ("quiero una pizza" en una plomería): lo dice y muestra lo que sí hay.
+- **Detalle insuficiente** ("no sé"): explica por qué lo necesita y da un ejemplo.
+- **Celular inválido**: dice cuántos dígitos escribió. También se puede pagar con QR sin dar el celular.
+- **Cantidades** en número o palabras ("media docena", "diez"), con un límite de 99 por chat.
+- **Horarios en texto libre** ("mañana en la tarde", "el segundo"); si pide un día sin espacio, lo dice.
+- **Preguntas en cualquier momento** (precios, horario, zona, cómo pagar): responde y retoma el paso.
+- **Detalles extra** a media conversación se anotan para el negocio.
+- Tras dos malentendidos, o si el cliente lo pide, ofrece **hablar con el negocio**. El negocio ve una alerta
+  en el panel y responde desde ahí; su mensaje llega al mismo chat.
 
 ## Qué hace
 
@@ -70,12 +125,12 @@ cp .env.example .env     # sin PEY_API_KEY corre en modo simulado
 npm start                # http://localhost:3000
 ```
 
-- `/`: inicio con los negocios de ejemplo.
-- `/chat?n=plomeria` (o `dental`, `diseno`, `ingles`, `postres`, `pulseras`, `tamales`): el chat del cliente.
+- `/`: inicio con buscador y filtros.
+- `/chat?n=<id del negocio>` (por ejemplo `plomeria`, `dental`, `tamales`): el chat del cliente.
   Agrega `&nuevo` para empezar otra conversación.
 - `/panel`: el negocio.
-- En **modo simulado** aparece un botón "Simular que pagué". Ese modo sirve solo para desarrollo:
-  la entrega usa pey en producción.
+- En **modo de prueba** (sin `PEY_API_KEY`, o con `PEY_MOCK=1`) aparece el botón "Simular que pagué".
+- `npm test`: 17 pruebas, incluidas conversaciones completas con mensajes coherentes e incoherentes.
 
 ## Deploy (Render, gratis)
 
@@ -93,7 +148,8 @@ npm start                # http://localhost:3000
 
 | Variable | Descripción |
 |---|---|
-| `PEY_API_KEY` | API key de pey (Bearer). Sin ella, modo simulado |
+| `PEY_API_KEY` | API key de pey (Bearer). Sin ella, modo de prueba |
+| `PEY_MOCK` | `1` fuerza el modo de prueba aunque haya API key (útil mientras pey activa la cuenta) |
 | `PEY_WEBHOOK_SECRET` | Secreto del webhook (Standard Webhooks) |
 | `PEY_BANK_ACCOUNT_ID` | Opcional: cuenta CoDi específica (ULID) |
 | `DEMO_CHARGE_AMOUNT` | Opcional: monto real a cobrar en pruebas (ej. `0.01`) |
@@ -120,7 +176,9 @@ npm start                # http://localhost:3000
 
 ## Siguientes pasos (4 semanas)
 
+- Primer cobro CoDi real con webhook en cuanto pey active la cuenta.
 - Conectar WhatsApp Business API.
+- Base de datos (Postgres) para que los datos no se pierdan al reiniciar el servidor.
 - Alta de negocios desde el panel, cada uno con su catálogo y su cuenta CoDi.
 - Carrito con varios productos, agenda real y recordatorios.
 - Reportes para el negocio: ingresos por semana y comisiones ahorradas contra tarjeta.

@@ -4,9 +4,10 @@
 Trato Hecho · Cuentas claras (antes "Chamba"): asistente por chat para cualquier negocio (oficios, emprendedores,
 freelancers, negocios informales). El agente por defecto se llama Clarito. Cotiza con precios fijos del catálogo,
 agenda si el negocio lo pide y cobra con CoDi usando el API de pey. Panel del negocio en vivo (SSE).
-Negocios configurables en `config/businesses.json`, un ejemplo por perfil: oficio (Plomería Don Beto),
-formal (Consultorio Dental Sonríe), freelance (Ana Ruiz · Diseño), emprendedor (Clases de inglés con Diego),
-jóvenes y niños (Postres de Sofi, Pulseras de Mateo) y tercera edad (Tamales Doña Mary).
+Negocios configurables en `config/businesses.json`: 21 negocios en 9 categorías (`categories`) y 6 tipos de
+negocio (`profiles`). El agente valida cada paso con reglas en `src/nlu.js` (texto sin sentido, fuera de catálogo,
+cantidades, celulares, horarios, preguntas) y puede pasar la conversación al negocio (`needsHuman`; el negocio
+responde desde el panel con `POST /api/panel/jobs/:id/reply`).
 Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 
 ## Fechas y reglas que importan
@@ -50,13 +51,18 @@ Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 ## Estado
 - Probado: flujo completo en modo simulado; modo producción contra un pey falso (forma del body correcta);
   firma inválida → 400, válida → confirma cita, duplicado → ignorado; QR se dibuja desde qrString.
-- NO probado aún contra pey real. Primer paso: configurar .env y hacer un cobro de $0.01 real.
+- Repo público: https://github.com/isaelgarcia90/trato-hecho (rama master; push → Render redeploya solo).
+- Live: https://trato-hecho-l22c.onrender.com (Render free, servicio `trato-hecho`). Variables en Render:
+  PEY_API_KEY, PEY_WEBHOOK_SECRET, ALLOWED_PHONES, DEMO_CHARGE_AMOUNT=0.01, PANEL_PASSWORD y PEY_MOCK=1.
+- pey real (15 nov 2026): la key se acepta, pero /codi/pn y /codi/qr responden
+  `400 API key does not have CoDi enabled` porque la cuenta bancaria está en Pending (hasta 5 días hábiles).
+  Webhook configurado y verificado (sin firma → 400). Por eso la demo corre con PEY_MOCK=1.
 
-## Pendiente para hoy (en orden)
-1. Repo público en github.com/isaelgarcia90.
-2. Alta de CLABE y API key en pey; deploy en Render (render.yaml); webhook → https://<app>/webhooks/pey.
-3. Prueba real con celular (push; si falla, QR). Revisar logs `[webhook]`.
-4. Video corto y enviar el form antes de la 1 PM.
+## Pendiente (en orden)
+1. Cuando la cuenta CoDi esté activa: borrar PEY_MOCK en Render y hacer un cobro real de $0.01 (push; si falla, QR).
+   Revisar logs `[pay]` y `[webhook]`. Obligatorio antes del 12 dic 2026.
+2. Video ≤ 3 min con un cobro CoDi completo.
+3. Migrar a Postgres (Neon/Supabase) y después a Vercel; WhatsApp Business API.
 
 ## Ideas para las 4 semanas (no implementadas)
 - WhatsApp Business API real; multi-negocio; recordatorios; reportes de comisiones ahorradas.
