@@ -4,10 +4,11 @@
 Trato Hecho · Cuentas claras (antes "Chamba"): asistente por chat para cualquier negocio (oficios, emprendedores,
 freelancers, negocios informales). El agente por defecto se llama Clarito. Cotiza con precios fijos del catálogo,
 agenda si el negocio lo pide y cobra con CoDi usando el API de pey. Panel del negocio en vivo (SSE).
-Negocios configurables en `config/businesses.json`: 21 negocios en 9 categorías (`categories`) y 6 tipos de
-negocio (`profiles`). El agente valida cada paso con reglas en `src/nlu.js` (texto sin sentido, fuera de catálogo,
-cantidades, celulares, horarios, preguntas) y puede pasar la conversación al negocio (`needsHuman`; el negocio
-responde desde el panel con `POST /api/panel/jobs/:id/reply`).
+Negocios en `config/businesses.json`: 38 negocios en 9 categorías, con `mode` (domicilio|local|linea|llevar),
+`rating`/`reviews` de ejemplo y `steps` (details, quantity, schedule, address). El agente (src/agent.js + src/nlu.js)
+valida celulares MX, direcciones por partes, recuerda datos adelantados, acepta correcciones, pasa al negocio
+(`needsHuman`, respuesta desde el panel) y pide calificación al pagar (`db.ratings`).
+Inicio: historia de 4 capítulos con scroll horizontal fijo (mascotas que giran) + buscador con 3 filtros.
 Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 
 ## Fechas y reglas que importan

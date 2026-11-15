@@ -16,6 +16,7 @@ const INTENTS = [
   ['hours', ['horario', 'horarios', 'a que hora', 'que hora', 'abren', 'cierran', 'abierto', 'que dias']],
   ['location', ['donde', 'ubicacion', 'direccion', 'zona', 'a domicilio', 'vienen', 'llegan hasta', 'cobertura']],
   ['payment', ['como pago', 'como se paga', 'formas de pago', 'codi', 'transferencia', 'efectivo', 'tarjeta', 'es seguro', 'como funciona el pago']],
+  ['bot', ['eres un robot', 'eres robot', 'eres humano', 'eres una persona', 'eres real', 'eres ia', 'eres un bot', 'con quien hablo']],
   ['thanks', ['gracias', 'muchas gracias', 'mil gracias', 'te agradezco']],
   ['greeting', ['hola', 'buenas', 'buen dia', 'buenos dias', 'buenas tardes', 'buenas noches', 'que tal', 'hey', 'saludos', 'que onda']],
   ['affirm', ['si', 'sip', 'va', 'ok', 'okay', 'dale', 'de acuerdo', 'claro', 'confirmo', 'perfecto', 'sale', 'simon', 'adelante', 'esta bien', 'trato hecho', 'listo']],
@@ -74,6 +75,113 @@ export function isQuestion(text) {
 /** Cuántos dígitos escribió (para explicar por qué un celular no es válido). */
 export const digitCount = text => String(text || '').replace(/[^\d]/g, '').length;
 
+/**
+ * Valida un celular mexicano. Devuelve { ok, phone } o { ok: false, reason, digits }.
+ * Razones: 'none' (no hay dígitos), 'length', 'prefix' (empieza en 0 o 1), 'repeated', 'sequence'.
+ */
+export function validatePhone(text) {
+  // Si el texto trae varios números ("Morelos 45 … cel 55 1234 5678"), se valida cada bloque largo.
+  const runs = (String(text || '').match(/\+?\d[\d\s\-().]*\d|\d/g) || []).map(r => r.replace(/\D/g, '')).filter(r => r.length >= 7);
+  if (runs.length > 1 || (runs.length === 1 && runs[0].length !== String(text || '').replace(/\D/g, '').length)) {
+    let worst = null;
+    for (const r of runs) {
+      const v = validateDigits(r);
+      if (v.ok) return v;
+      worst = worst || v;
+    }
+    return worst;
+  }
+  return validateDigits(String(text || '').replace(/\D/g, ''));
+}
+
+function validateDigits(digits) {
+  let d = digits;
+  if (!d) return { ok: false, reason: 'none', digits: 0 };
+  if (d.length === 12 && d.startsWith('52')) d = d.slice(2);
+  else if (d.length === 13 && d.startsWith('521')) d = d.slice(3);
+  else if (d.length === 13 && /^04[45]/.test(d)) d = d.slice(3);
+  if (d.length !== 10) return { ok: false, reason: 'length', digits: d.length };
+  if (/^[01]/.test(d)) return { ok: false, reason: 'prefix', digits: 10 };
+  if (/^(\d)\1{9}$/.test(d)) return { ok: false, reason: 'repeated', digits: 10 };
+  if ('01234567890123456789'.includes(d) || '98765432109876543210'.includes(d)) return { ok: false, reason: 'sequence', digits: 10 };
+  return { ok: true, phone: d };
+}
+
+/** Parece que el mensaje trae un número de teléfono (para validarlo aunque esté mal). */
+export const looksLikePhone = text => /(?:\+?\d[\d\s\-().]{5,}\d)/.test(String(text || '')) && digitCount(text) >= 7;
+
+const STREET = /\b(calle|c\.|av\.?|avenida|calzada|calz\.?|cerrada|cda\.?|privada|priv\.?|andador|callejon|boulevard|blvd\.?|eje|circuito|prolongacion|retorno|camino)\b/;
+const COLONIA = /\b(col\.?|colonia|fracc\.?|fraccionamiento|barrio|unidad|u\.\s?h\.?|pueblo|residencial|ampliacion)\s+([a-z0-9][a-z0-9 .'-]{2,})/;
+const CP = /\b(?:c\.?\s?p\.?\s*)?(\d{5})\b/;
+const NUMBER = /(?:#|no\.?|num\.?|numero|n°)\s*(\d{1,5}[a-z]?)|\b(\d{1,5}[a-z]?)\b|\b(s\/n|sin numero)\b|\b(mz\.?|manzana)\s*\d+/;
+
+/** ¿El mensaje parece una dirección? (calle, colonia, CP o "vivo en"). */
+export function looksLikeAddress(text) {
+  const t = norm(text);
+  return STREET.test(t) || COLONIA.test(t) || /\b(vivo en|mi direccion|direccion es|estoy en la calle)\b/.test(t) || /\bc\.?\s?p\.?\s*\d{5}\b/.test(t);
+}
+
+/**
+ * Interpreta una dirección y dice qué le falta. Acepta piezas sueltas en varios mensajes:
+ * prev = dirección parcial anterior. Devuelve { street, number, colonia, cp, missing: [] }.
+ */
+export function parseAddress(text, prev = {}) {
+  const raw = String(text || '').trim();
+  const t = norm(raw).replace(/^(vivo en|mi direccion es|la direccion es|es en|en)\s+/, '');
+  const out = { ...prev };
+  const cp = t.match(CP);
+  if (cp && !looksLikePhone(raw)) out.cp = cp[1];
+  const col = t.match(COLONIA);
+  if (col) out.colonia = col[2].replace(/\s*,.*$/, '').replace(/\s+(cp|c\.p\.).*$/, '').trim();
+  const body = t.replace(CP, ' ').replace(COLONIA, ' ').replace(/\b(int\.?|interior|depto\.?|departamento|dpto\.?)\s*\w+/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  const mz = body.match(/\b(?:mz\.?|manzana)\s*(\w+)\s*(?:lt\.?|lote)\s*(\w+)/);
+  if (mz) {
+    out.number = out.number || `Mz ${mz[1]} Lt ${mz[2]}`;
+    if (!out.street) out.street = body.slice(0, mz.index).replace(/[,\s]+$/, '').trim() || 'Sin calle';
+  } else {
+    const sn = body.match(/\b(s\/n|sin numero)\b/);
+    const num = sn ? null : body.match(/(?:#|\bno\.?|\bnum\.?|\bnumero)?\s*\b(\d{1,5}[a-z]?)\b/);
+    const cut = sn ? sn.index : num ? num.index : -1;
+    if (sn) out.number = 'S/N';
+    else if (num) out.number = num[1];
+    const before = (cut >= 0 ? body.slice(0, cut) : body).replace(/[,#\s]+$/, '').replace(/^(la|el)\s+/, '').trim();
+    const after = cut >= 0 ? body.slice(cut + (sn ? sn[0] : num[0]).length).replace(/^[,\s]+/, '').trim() : '';
+    if (!out.street && before && /[a-z]{3,}/.test(before) && !isGibberish(before) && before.split(' ').length <= 6) out.street = before;
+    // "Universidad 1200 Narvarte": lo que sigue al número suele ser la colonia.
+    if (!out.colonia && after && /^[a-z .'-]{4,40}$/.test(after) && !isGibberish(after)) out.colonia = after;
+  }
+  // Una respuesta suelta como "Narvarte" cuando ya hay calle y número es la colonia.
+  if (!col && prev.street && prev.number && !out.colonia && !cp && /^[a-z .'-]{4,40}$/.test(t) && !isGibberish(t)) out.colonia = t;
+  out.missing = [];
+  if (!out.street) out.missing.push('street');
+  if (!out.number) out.missing.push('number');
+  if (!out.colonia && !out.cp) out.missing.push('colonia');
+  return out;
+}
+
+const title = s => s.replace(/\b([a-zñ])/g, c => c.toUpperCase());
+
+export function formatAddress(a) {
+  const street = a.street === 'Sin calle' ? '' : title(a.street || '');
+  const parts = [`${street} ${a.number || 'S/N'}`.trim()];
+  if (a.colonia) parts.push(`Col. ${title(a.colonia)}`);
+  if (a.cp) parts.push(`C.P. ${a.cp}`);
+  return parts.join(', ');
+}
+
+/** Nombre si el cliente se presenta: "me llamo Laura", "soy Pedro". */
+export function parseName(text) {
+  const m = String(text || '').match(/\b(?:me llamo|mi nombre es|soy)\s+([A-Za-zÁÉÍÓÚÑáéíóúñ]{2,20})(?:\s+([A-Za-zÁÉÍÓÚÑáéíóúñ]{2,20}))?/i);
+  if (!m) return null;
+  const first = m[1];
+  if (/^(de|el|la|un|una|cliente|nuevo|nueva)$/i.test(first)) return null;
+  return first[0].toUpperCase() + first.slice(1).toLowerCase();
+}
+
+/** El cliente está corrigiendo algo que ya dijo. */
+export const isCorrection = text => /\b(mejor|cambia|cambiar|cambialo|corrige|corrijo|perdon|me equivoque|en realidad|mas bien|no es|era)\b/.test(norm(text));
+
 const KEYBOARD = ['qwert', 'werty', 'asdf', 'sdfg', 'dfgh', 'fghj', 'ghjk', 'hjkl', 'zxcv', 'xcvb', 'cvbn', 'vbnm', 'poiu', 'lkjh', 'mnbv'];
 
 /**
@@ -90,6 +198,8 @@ export function isGibberish(text) {
   const bad = words.filter(w =>
     !/[aeiouy]/.test(w) ||
     /[bcdfghjklmnpqrstvwxz]{5,}/.test(w) ||
+    (/[bcdfghjklmnpqrstvwxz]{4}/.test(w) && !/(nstr|bstr|nscr|bscr|ngst|rstr)/.test(w)) ||
+    /q[^u]/.test(w) || /[jkwxz]{2}/.test(w) ||
     /(.)\1{3,}/.test(w) ||
     KEYBOARD.some(k => w.includes(k)));
   return bad.length / words.length >= 0.5;
@@ -118,10 +228,13 @@ export function matchSlot(text, slots) {
   const day = WEEKDAYS.find(d => new RegExp(`\\b${d}\\b`).test(t));
   const wantsAfternoon = /\b(tarde|noche)\b/.test(t);
   const wantsMorning = /\b(temprano|en la manana|por la manana)\b/.test(t);
+  const hm = t.match(/\b(?:a las|las|a la|la)\s+(\d{1,2})(?::\d{2})?\b|\b(\d{1,2}):\d{2}\b|\b(\d{1,2})\s*(?:am|pm|hrs?|horas)\b/);
+  const askedHour = hm ? Number(hm[1] || hm[2] || hm[3]) : null;
   const scored = slots.map((s, i) => {
     const ns = norm(s);
     const hour = Number((ns.match(/(\d{1,2}):\d{2}/) || [])[1]);
     let score = 0;
+    if (askedHour != null && hour && (hour === askedHour || hour === askedHour + 12)) score += 3;
     if (day && ns.startsWith(day)) score += 2;
     if (wantsAfternoon && hour >= 13) score += 1;
     if (wantsMorning && hour && hour < 13) score += 1;

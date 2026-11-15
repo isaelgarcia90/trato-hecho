@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b5c55">
+  <meta name="theme-color" content="#1f1a17">
   <title>Chat · Trato Hecho</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="chat-page">
@@ -25,8 +25,7 @@
     </header>
     <div id="msgs" class="msgs" aria-live="polite">
       <div class="day">Hoy</div>
-      <div class="secure">🔒 Pagos con CoDi: el dinero va directo de tu banco al negocio, sin comisión.</div>
-    </div>
+          </div>
     <div class="quick" id="quick" aria-label="Respuestas rápidas"></div>
     <form id="composer" class="composer">
       <label class="sr-only" for="input">Mensaje</label>
@@ -44,9 +43,8 @@
           <div>🕒 <span id="i-hours"></span></div>
           <div>💳 <span id="i-pay"></span></div>
         </div>
-        <h4>Precios</h4>
-        <div id="i-menu"></div>
-        <div class="pay-note">Los precios los fija el negocio. Pagas con CoDi desde la app de tu banco: sin tarjeta y sin comisión.</div>
+                <div id="i-menu"></div>
+        
       </div>
     </div>
   </div>
@@ -73,22 +71,24 @@ function setTyping(on) { if (on) $msgs.appendChild(typing); typing.classList.tog
 function receipt(q) {
   const box = el('div', 'receipt');
   const head = el('div', 'rh');
-  head.append(el('span', '', 'Cotización'), el('span', '', 'Precio fijo'));
+  head.textContent = 'Tu cotización';
   box.append(head);
   for (const l of q.lines) {
     const row = el('div', 'line');
     row.append(el('span', '', (l.quantity > 1 ? l.quantity + ' × ' : '') + l.concept), el('span', '', money(l.amount)));
     box.append(row);
   }
-  if (q.slot) box.append(el('div', 'when', (q.slotLabel === 'Entrega' ? '📦 Entrega: ' : '📅 Cita: ') + q.slot));
+  if (q.slot) box.append(el('div', 'meta', (q.slotLabel === 'Entrega' ? '📦 ' : '📅 ') + q.slot));
+  if (q.address) box.append(el('div', 'meta', '📍 ' + q.address));
+  if (q.phone) box.append(el('div', 'meta', '📱 ' + q.phone));
   const total = el('div', 'total');
   total.append(el('span', '', 'Total'), el('span', '', money(q.total)));
   box.append(total);
   const due = el('div', 'due');
-  if (q.chargeKind === 'anticipo') due.append(`Anticipo para apartar (${q.depositPercent}%): `, el('b', '', money(q.deposit)), '. El resto, al terminar.');
+  if (q.chargeKind === 'anticipo') due.append('Para apartar: ', el('b', '', money(q.deposit)), '. El resto al terminar.');
   else due.append('A pagar: ', el('b', '', money(q.total)));
   box.append(due);
-  box.append(el('div', 'fine', 'Con CoDi, sin comisión.' + (q.demoAmount != null ? ` Cobro de prueba: ${money(q.demoAmount)}.` : '')));
+  box.append(el('div', 'fine', 'Pago con CoDi, sin comisión.' + (q.demoAmount != null ? ` Cobro de prueba: ${money(q.demoAmount)}.` : '')));
   return box;
 }
 
@@ -103,7 +103,7 @@ function payCard(m) {
     box.append(img);
   }
   box.append(el('div', 'state', 'Esperando tu pago'));
-  box.append(el('div', 'hint', m.method === 'push' ? 'Revisa las notificaciones de la app de tu banco.' : 'App de tu banco › CoDi › Escanear.'));
+  box.append(el('div', 'hint2', m.method === 'push' ? 'Revisa las notificaciones de tu banco.' : 'App de tu banco › CoDi › Escanear.'));
   payCards.set(m.chargeId, box);
   return box;
 }
@@ -209,9 +209,8 @@ function quickReplies() {
   const q = document.getElementById('quick');
   q.innerHTML = '';
   const opts = [
-    ['Ver precios', { action: 'prices', text: 'Ver precios' }],
+    ['💲 Precios', { action: 'prices', text: 'Ver precios' }],
     ['¿Cómo pago?', { text: '¿Cómo pago?' }],
-    ['Horario', { text: '¿Cuál es su horario?' }],
     [`Hablar con ${biz.owner}`, { action: 'human', text: `Quiero hablar con ${biz.owner}` }],
   ];
   for (const [label, body] of opts) {
@@ -227,7 +226,7 @@ function fillInfo() {
   tile.textContent = biz.emoji;
   tile.style.background = `color-mix(in srgb, ${biz.color} 14%, #fff)`;
   document.getElementById('i-name').textContent = biz.name;
-  document.getElementById('i-cat').textContent = [biz.categoryLabel, biz.profileLabel].filter(Boolean).join(' · ');
+  document.getElementById('i-cat').innerHTML = biz.rating ? `<span class="stars">★ ${biz.rating.toFixed(1)}</span> <small>(${biz.reviews} opiniones)</small>` : 'Nuevo';
   document.getElementById('i-about').textContent = biz.about;
   document.getElementById('i-zone').textContent = biz.zone;
   document.getElementById('i-hours').textContent = biz.hours;
@@ -277,10 +276,10 @@ async function start() {
   biz = status.businesses.find(b => b.id === businessId) || status.businesses[0];
   document.title = biz.name + ' · Trato Hecho';
   document.getElementById('biz').textContent = biz.name;
-  document.getElementById('agent').textContent = biz.agentName + ' · en línea';
+  document.getElementById('agent').textContent = biz.agentName + ' · en línea' + (biz.rating ? ' · ★ ' + biz.rating.toFixed(1) : '');
   const avatar = document.getElementById('avatar');
   avatar.textContent = biz.emoji;
-  avatar.style.background = `color-mix(in srgb, ${biz.color} 18%, #fff)`;
+  avatar.style.background = `color-mix(in srgb, ${biz.color} 22%, #fff)`;
   fillInfo();
   quickReplies();
 

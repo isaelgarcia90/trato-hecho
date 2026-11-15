@@ -6,10 +6,10 @@
   <title>Panel del negocio · Trato Hecho</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body class="app">
+<body>
   <header class="app-head">
     <div class="in">
       <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho <small>· Panel</small></a>
@@ -30,7 +30,7 @@
     </div>
 
     <section class="kpis">
-      <div class="kpi"><span class="l">Tratos cerrados</span><b id="k-deals">0</b><small>Con pago confirmado</small></div>
+      <div class="kpi"><span class="l">Tratos cerrados</span><b id="k-deals">0</b><small id="k-rating">Con pago confirmado</small></div>
       <div class="kpi"><span class="l">Cobrado con CoDi</span><b id="k-paid">$0</b><small>Directo a tu cuenta</small></div>
       <div class="kpi"><span class="l">Por cobrar</span><b id="k-pending">$0</b><small>Anticipos y restantes</small></div>
       <div class="kpi accent"><span class="l">Ahorro en comisiones</span><b id="k-saved">$0</b><small>Contra ~3% con tarjeta</small></div>
@@ -114,6 +114,7 @@ function card(j) {
     ${j.quote ? `<div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
       <div class="money"><span>Total <b>${money(j.totals.total)}</b></span><span class="ok">Pagado ${money(j.totals.paid)}</span><span class="warn">Pendiente ${money(j.totals.pending)}</span></div>` : ''}
     ${extras || charges ? `<ul>${extras}${charges}</ul>` : ''}
+    ${j.rating ? `<div class="review"><span class="stars">${'★'.repeat(j.rating.stars)}${'☆'.repeat(5 - j.rating.stars)}</span>${j.rating.comment ? ' “' + esc(j.rating.comment) + '”' : ''}</div>` : ''}
     <div class="row" data-reply-row ${j.needsHuman ? '' : 'hidden'}>
       <input class="input" data-reply placeholder="Escribe tu respuesta al cliente" aria-label="Respuesta al cliente">
       <button class="btn primary sm" data-send>Enviar</button>
@@ -199,6 +200,8 @@ function refresh(allowEmpty) {
     if (j.status !== 'cotizando') pending += j.totals?.pending || 0;
   }
   document.getElementById('k-deals').textContent = deals;
+  const rated = scope.filter(j => j.rating);
+  document.getElementById('k-rating').textContent = rated.length ? `★ ${(rated.reduce((s, j) => s + j.rating.stars, 0) / rated.length).toFixed(1)} de tus clientes` : 'Con pago confirmado';
   document.getElementById('k-paid').textContent = money(paid);
   document.getElementById('k-pending').textContent = money(pending);
   document.getElementById('k-saved').textContent = money(paid * CARD_FEE);

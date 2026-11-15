@@ -4,7 +4,7 @@ import { defaultBusiness, getBusiness, scheduleLabel } from './catalog.js';
 import * as pey from './pey.js';
 import {
   addMessage, chargesForJob, createCharge, findChargeForEvent, getJob,
-  markEventProcessed, nextNumRef, updateCharge, updateJob,
+  markEventProcessed, nextNumRef, ratingForJob, updateCharge, updateJob,
 } from './store.js';
 import { publish } from './events.js';
 
@@ -41,6 +41,7 @@ export function publicJob(job) {
     business: { id: b.id, name: b.name, emoji: b.emoji, color: b.color, scheduleLabel: scheduleLabel(b) },
     charges: chargesForJob(job.id),
     totals: jobTotals(job),
+    rating: ratingForJob(job.id),
   };
 }
 
@@ -108,15 +109,15 @@ function paidMessage(job, charge, pending) {
   const b = businessFor(job);
   const label = scheduleLabel(b);
   const amount = money(charge.quotedAmount);
-  if (charge.kind === 'restante') return `Recibimos tu pago de ${amount}. ¡Gracias por tu preferencia!`;
+  if (charge.kind === 'restante') return `Recibimos ${amount}. ¡Gracias por tu preferencia!`;
   if (charge.kind === 'anticipo') {
     return `Recibimos tu anticipo de ${amount}. ` +
-      (label === 'Cita' ? `Tu cita quedó confirmada para el ${job.slot}. ` : label ? `Tu pedido quedó confirmado para el ${job.slot}. ` : '') +
-      `Restan ${money(pending)}, que se pagan al terminar.`;
+      (label === 'Cita' ? `Cita confirmada: ${job.slot}. ` : label ? `Pedido confirmado: ${job.slot}. ` : '') +
+      `Restan ${money(pending)} al terminar.`;
   }
-  if (label === 'Cita') return `Recibimos tu pago de ${amount}. Tu cita quedó confirmada para el ${job.slot}. ¡Trato hecho!`;
-  if (label) return `Recibimos tu pago de ${amount}. Tu pedido quedó confirmado para entrega el ${job.slot}. ¡Trato hecho!`;
-  return `Recibimos tu pago de ${amount}. ${b.owner} ya está preparando tu pedido. ¡Trato hecho!`;
+  if (label === 'Cita') return `Recibimos ${amount}. Cita confirmada: ${job.slot}. ¡Trato hecho!`;
+  if (label) return `Recibimos ${amount}. Entrega confirmada: ${job.slot}. ¡Trato hecho!`;
+  return `Recibimos ${amount}. ${b.owner} ya prepara tu pedido. ¡Trato hecho!`;
 }
 
 /** Procesa un evento de pago de pey (ya verificado). Idempotente. */
@@ -140,6 +141,14 @@ export function handlePaymentEvent(evt, eventKey) {
   const { pending } = jobTotals(job);
   updateJob(job.id, { status: pending > 0 ? 'confirmada' : 'pagada' });
   say(job.id, 'agente', paidMessage(job, charge, pending), { kind: 'paid', chargeId: charge.id, amount: charge.quotedAmount });
+  if (pending <= 0 && !ratingForJob(job.id)) {
+    const owner = businessFor(job).owner;
+    const label = { 5: 'Excelente', 4: 'Muy bien', 3: 'Regular', 2: 'Mal', 1: 'Muy mal' };
+    say(job.id, 'agente', `¿Cómo calificarías a ${owner}? Tu opinión ayuda a otros clientes.`, {
+      kind: 'rate',
+      buttons: [5, 4, 3, 2, 1].map(n => ({ label: `${'⭐'.repeat(n)}  ${label[n]}`, action: `rate:${n}` })),
+    });
+  }
   notifyJob(job.id);
   return { ok: true, chargeId: charge.id };
 }

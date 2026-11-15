@@ -3,10 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Webhook } from 'standardwebhooks';
 import { config } from './config.js';
-import { brand, businesses, categories, defaultBusiness, getBusiness, profiles, publicBusiness } from './catalog.js';
+import { brand, businesses, categories, defaultBusiness, getBusiness, modes, profiles, publicBusiness } from './catalog.js';
 import { greet, handleClientMessage } from './agent.js';
 import { businessFor, chargeJob, handlePaymentEvent, money, notifyJob, publicJob, say } from './payments.js';
-import { createJob, getCharge, getJob, listJobs, newId, updateJob } from './store.js';
+import { createJob, getCharge, getJob, listJobs, newId, ratingsFor, updateJob } from './store.js';
 import { subscribe } from './events.js';
 
 const app = express();
@@ -75,7 +75,8 @@ app.get('/api/status', (req, res) => {
     brand,
     categories,
     profiles,
-    businesses: businesses.map(publicBusiness),
+    modes,
+    businesses: businesses.map(b => publicBusiness(b, ratingsFor(b.id))),
     mode: config.peyMock ? 'simulado' : 'produccion',
     demoChargeAmount: config.demoChargeAmount,
     llm: Boolean(config.llmApiKey),

@@ -3,338 +3,247 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trato Hecho · Cotiza, agenda y paga por chat</title>
-  <meta name="description" content="Encuentra plomeros, estéticas, clases, comida y más. Cotiza por chat con precios claros, agenda y paga con CoDi sin comisión.">
-  <meta name="theme-color" content="#0f766e">
+  <title>Trato Hecho · Cuentas claras</title>
+  <meta name="description" content="Cotiza, aparta y paga por chat con negocios de tu colonia. Precios claros y pago con CoDi.">
+  <meta name="theme-color" content="#fff8ee">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35"/></symbol>
-    <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 7v5l3 2"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="m5 12 5 5 9-10"/></symbol>
-    <symbol id="i-filter" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 6h16M7 12h10M10 18h4"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></symbol>
-  </svg>
-
-  <header class="site-header">
-    <div class="in">
-      <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho <small>· Cuentas claras</small></a>
-      <nav aria-label="Principal">
-        <a href="#explorar">Explorar</a>
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#negocios">Para negocios</a>
-      </nav>
+  <header class="top">
+    <div class="picado-row" aria-hidden="true"><div class="picado"></div><div class="picado"></div><div class="picado"></div><div class="picado"></div><div class="picado"></div></div>
+    <div class="bar">
+      <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho</a>
       <div class="right">
-        <span id="mode" class="badge" hidden></span>
-        <a class="btn sm" href="/panel"><span>Panel del negocio</span><svg width="16" height="16"><use href="#i-arrow"/></svg></a>
+        <span id="mode" class="badge sim hide-sm" hidden>Modo de prueba</span>
+        <a class="btn sm hide-sm" href="/panel">Soy negocio</a>
+        <a class="btn sm primary" href="#buscar">Buscar</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="container in">
-        <div>
-          <span class="eyebrow">Pagos con CoDi · sin comisión</span>
-          <h1>Cotiza, agenda y paga <span>por chat</span>.</h1>
-          <p class="lead">Escríbele a plomeros, estéticas, maestros, cocineras y más. Te responden al instante con precios claros, apartas tu lugar y pagas desde la app de tu banco.</p>
-          <form class="search" id="hero-search" role="search">
-            <span class="ic"><svg width="20" height="20"><use href="#i-search"/></svg></span>
-            <label class="sr-only" for="q">¿Qué necesitas?</label>
-            <input id="q" type="search" placeholder="¿Qué necesitas? Plomero, pastel, clases…" autocomplete="off">
-            <button class="btn primary">Buscar</button>
-          </form>
-          <div class="popular" id="popular">Popular:</div>
-          <div class="trust">
-            <span><svg width="16" height="16"><use href="#i-check"/></svg>Precios fijos del negocio</span>
-            <span><svg width="16" height="16"><use href="#i-check"/></svg>Sin tarjeta ni comisiones</span>
-            <span><svg width="16" height="16"><use href="#i-check"/></svg>Confirmación al instante</span>
-          </div>
-        </div>
-        <div class="mock" aria-hidden="true">
-          <div class="mh"><span class="av">🔧</span><div>Plomería Don Beto<small>Clarito · en línea</small></div></div>
-          <div class="body">
-            <div class="b">Hola, soy Clarito. ¿Qué problema tienes en casa?</div>
-            <div class="b out">Se tapó el baño desde ayer 😩</div>
-            <div class="b rc"><div class="row"><span>Destape de WC</span><b>$380</b></div><div class="row"><span>Mañana, 16:00</span><span></span></div><div class="tot"><span>Anticipo</span><span>$190</span></div></div>
-            <div class="b out">Mándame el cobro</div>
-            <div class="b paid">✅ Pago recibido. Tu cita quedó confirmada.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="explorar">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <h2>Explora negocios</h2>
-            <p>Elige uno y cotiza en el chat. Te responde al momento.</p>
-          </div>
-        </div>
-        <div class="mobile-cats" id="mobile-cats" role="group" aria-label="Categorías"></div>
-        <div class="explore">
-          <aside class="filters" id="filters" aria-label="Filtros"></aside>
-          <div>
-            <div class="toolbar">
-              <span class="count" id="count"></span>
-              <span class="spacer"></span>
-              <button class="btn sm only-mobile" id="open-filters" type="button"><svg width="16" height="16"><use href="#i-filter"/></svg>Filtros</button>
-              <label class="sr-only" for="sort">Ordenar</label>
-              <select class="select" id="sort">
-                <option value="rel">Relevancia</option>
-                <option value="price">Precio: menor a mayor</option>
-                <option value="name">Nombre (A-Z)</option>
-              </select>
+    <section class="story" id="story" aria-label="Cómo funciona">
+      <div class="stage">
+        <div class="bg"></div>
+        <div class="track" id="track">
+          <article class="panel-s">
+            <div class="mascot-wrap" aria-hidden="true">
+              <div class="blob" style="--m:#ffd3e8"></div><div class="mascot">🦜</div>
+              <div class="prop a">Se tapó mi baño 😩</div>
+              <div class="prop b">¡Te ayudo! ¿Desde cuándo?</div>
             </div>
-            <div class="active-filters" id="active"></div>
-            <div class="grid" id="results"></div>
-          </div>
+            <div>
+              <div class="num">01 · Pide</div>
+              <h2>Dile qué <em>necesitas</em>.</h2>
+              <p>Escribe como en WhatsApp. Clarito te entiende.</p>
+              <div class="chips"><span>🔧 Plomero</span><span>🍰 Pastel</span><span>📚 Clases</span></div>
+            </div>
+          </article>
+          <article class="panel-s flip">
+            <div class="mascot-wrap" aria-hidden="true">
+              <div class="blob" style="--m:#ffe9b8"></div><div class="mascot">🐢</div>
+              <div class="prop a"><small>Destapar WC</small>$380</div>
+              <div class="prop b"><small>Para apartar</small>$190</div>
+            </div>
+            <div>
+              <div class="num">02 · Cotiza</div>
+              <h2>Un precio <em>claro</em>.</h2>
+              <p>Lo pone el negocio. Sin sorpresas al final.</p>
+            </div>
+          </article>
+          <article class="panel-s">
+            <div class="mascot-wrap" aria-hidden="true">
+              <div class="blob" style="--m:#cff3ef"></div><div class="mascot">🐶</div>
+              <div class="prop a">✅ Pago recibido</div>
+              <div class="prop b"><small>Comisión</small>$0</div>
+            </div>
+            <div>
+              <div class="num">03 · Paga</div>
+              <h2>Pagas desde <em>tu banco</em>.</h2>
+              <p>Con CoDi: sin tarjeta y sin comisión.</p>
+            </div>
+          </article>
+          <article class="panel-s flip">
+            <div class="mascot-wrap" aria-hidden="true">
+              <div class="blob" style="--m:#e7dcff"></div><div class="mascot">🦋</div>
+              <div class="prop a">⭐⭐⭐⭐⭐</div>
+              <div class="prop b">📅 Cita confirmada</div>
+            </div>
+            <div>
+              <div class="num">04 · Listo</div>
+              <h2>¡Trato <em>hecho</em>!</h2>
+              <p>Te confirman al instante y tú los calificas.</p>
+              <a class="btn pop" href="#buscar">Buscar un servicio ↓</a>
+            </div>
+          </article>
         </div>
+        <nav class="dots" id="dots" aria-label="Capítulos"></nav>
+        <div class="counter" id="counter" aria-hidden="true"><b>01</b> / 04</div>
+        <div class="hint" id="hint" aria-hidden="true"><i></i>Desliza</div>
       </div>
     </section>
 
-    <section class="section" id="como-funciona" style="padding-top:0">
-      <div class="container">
-        <div class="section-head"><div><h2>Así de fácil</h2></div></div>
-        <div class="steps3">
-          <div class="s"><div class="num">1</div><h3>Cuéntale qué necesitas</h3><p>Escribe con tus palabras. Clarito, el asistente del negocio, te entiende y te pregunta solo lo necesario.</p></div>
-          <div class="s"><div class="num">2</div><h3>Recibe un precio claro</h3><p>La cotización sale de los precios del negocio. Eliges horario o fecha de entrega si aplica.</p></div>
-          <div class="s"><div class="num">3</div><h3>Paga y listo</h3><p>Apruebas el cobro CoDi en la app de tu banco o escaneas un QR. La confirmación llega al instante.</p></div>
+    <section class="explore" id="buscar">
+      <div class="wrap">
+        <h2>¿Qué necesitas hoy?</h2>
+        <p class="sub">Elige y platica con el negocio. Te responde al momento.</p>
+        <form class="searchbar" id="search-form" role="search">
+          <span aria-hidden="true">🔎</span>
+          <label class="sr-only" for="q">Buscar</label>
+          <input id="q" type="search" placeholder="Plomero, pastel, uñas…" autocomplete="off">
+          <button class="clear" type="button" id="clear-q" aria-label="Borrar búsqueda" hidden>×</button>
+        </form>
+        <div class="cats" id="cats" role="group" aria-label="Categorías"></div>
+        <div class="filters">
+          <label>¿Dónde?<select class="select" id="f-mode"><option value="">Donde sea</option></select></label>
+          <label>Calificación<select class="select" id="f-rating">
+            <option value="0">Todas</option><option value="4.5">⭐ 4.5 o más</option><option value="4.8">⭐ 4.8 o más</option>
+          </select></label>
+          <label>Ordenar<select class="select" id="f-sort">
+            <option value="rating">Mejor calificados</option><option value="price">Más baratos</option><option value="name">De la A a la Z</option>
+          </select></label>
         </div>
-      </div>
-    </section>
+        <div class="result-line"><span id="count"></span><button type="button" id="reset" hidden>Quitar filtros</button></div>
+        <div class="grid" id="results"></div>
 
-    <section class="section" id="negocios" style="padding-top:0">
-      <div class="container">
-        <div class="biz">
-          <div>
-            <h2>¿Tienes un negocio? Atiende y cobra sin estar pegado al teléfono.</h2>
-            <p>Desde el oficio independiente hasta el consultorio o la venta de la colonia: tus clientes cotizan, apartan y pagan solos. Tú ves todo en tu panel y entras al chat cuando te necesitan.</p>
-            <a class="btn primary lg" href="/panel">Abrir el panel del negocio</a>
-          </div>
-          <div class="feats">
-            <div class="f"><b>$0</b><span>de comisión por cobro con CoDi.</span></div>
-            <div class="f"><b>Al instante</b><span>El dinero llega directo a tu cuenta.</span></div>
-            <div class="f"><b>Sin contracargos</b><span>Un pago aprobado no se revierte.</span></div>
-            <div class="f"><b>Menos faltas</b><span>El anticipo asegura la cita.</span></div>
-          </div>
+        <div class="owners">
+          <div><b>¿Tienes un negocio?</b><span>Tus clientes cotizan, apartan y pagan solos.</span></div>
+          <a class="btn" href="/panel">Ver mi panel</a>
         </div>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="container in">
-      <span>© 2026 Trato Hecho · Cuentas claras</span>
-      <span>Pagos con CoDi a través de pey · <a href="/panel">Panel del negocio</a></span>
-    </div>
-  </footer>
-
-  <dialog class="sheet" id="sheet" aria-label="Filtros">
-    <div class="sh"><b>Filtros</b><button class="btn ghost sm" id="close-sheet" type="button">Cerrar</button></div>
-    <div class="sb" id="sheet-body"></div>
-    <div class="sf"><button class="btn" id="clear-sheet" type="button">Limpiar</button><button class="btn primary" id="apply-sheet" type="button">Ver resultados</button></div>
-  </dialog>
+  <footer class="foot">Trato Hecho · Cuentas claras · Pagos con CoDi vía pey</footer>
 
 <script>
+const $ = id => document.getElementById(id);
 const money = n => '$' + Number(n).toLocaleString('es-MX', { maximumFractionDigits: 2 });
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-const MODES = { cita: 'Con cita', entrega: 'Pedido con entrega', directa: 'Compra inmediata' };
-const PAYS = { anticipo: 'Con anticipo', completo: 'Pago completo' };
-const SYN = { dentista: 'dental', doctor: 'salud', mecanico: 'mecanica', carro: 'auto', coche: 'auto', perro: 'canina', mascota: 'canina',
-  pastel: 'postres', comida: 'comida', maestro: 'clases', profe: 'clases', foto: 'fotografia', luz: 'electricidad', llaves: 'cerrajeria', pelo: 'cabello' };
-const POPULAR = ['Plomero', 'Electricista', 'Pastel', 'Clases de inglés', 'Corte de cabello', 'Dentista'];
+const SYN = { dentista: 'dental', doctor: 'salud', mecanico: 'mecanic', carro: 'auto', coche: 'auto', perro: 'perr', mascota: 'mascota',
+  pastel: 'pastel', maestro: 'clase', profe: 'clase', foto: 'foto', luz: 'electric', llave: 'cerraj', pelo: 'corte',
+  uñas: 'unas', unas: 'unas', tacos: 'taco', flores: 'flor', lentes: 'lente', comida: 'comida' };
+const MODE_ICON = { domicilio: '🛵', local: '🏪', linea: '💻', llevar: '🛍️' };
 
-let all = [], cats = {}, profiles = {};
-const state = { q: '', cat: '', modes: new Set(), pays: new Set(), profile: '', sort: 'rel' };
+// ---------- Historia: scroll vertical que mueve los capítulos de lado ----------
+const story = $('story'), track = $('track');
+const panels = track.children.length;
+const dots = $('dots');
+for (let i = 0; i < panels; i++) {
+  const d = document.createElement('button');
+  d.setAttribute('aria-label', `Capítulo ${i + 1}`);
+  d.onclick = () => window.scrollTo({ top: story.offsetTop + (i / (panels - 1)) * (story.offsetHeight - innerHeight) + 2, behavior: 'smooth' });
+  dots.append(d);
+}
+const ease = f => (f < .25 ? 0 : f > .75 ? 1 : (t => t * t * (3 - 2 * t))((f - .25) / .5));
+let ticking = false;
+function onScroll() {
+  ticking = false;
+  const total = story.offsetHeight - innerHeight;
+  const p = Math.min(1, Math.max(0, (scrollY - story.offsetTop) / total));
+  const raw = p * (panels - 1);
+  const i = Math.min(panels - 1, Math.floor(raw));
+  const pos = i + ease(raw - i);
+  track.style.transform = `translate3d(${-pos * 100}vw, 0, 0)`;
+  const active = Math.round(pos);
+  [...dots.children].forEach((d, k) => d.classList.toggle('on', k === active));
+  $('counter').innerHTML = `<b>${String(active + 1).padStart(2, '0')}</b> / ${String(panels).padStart(2, '0')}`;
+  $('hint').style.opacity = p > .03 ? 0 : 1;
+}
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+addEventListener('resize', onScroll);
+onScroll();
 
-const $ = id => document.getElementById(id);
-const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-const modeOf = b => b.steps.schedule === 'cita' ? 'cita' : b.steps.schedule === 'entrega' ? 'entrega' : 'directa';
-const payOf = b => b.depositPercent < 100 ? 'anticipo' : 'completo';
+// ---------- Explorar ----------
+let all = [], cats = {}, modes = {};
+const state = { q: '', cat: '', mode: '', rating: 0, sort: 'rating' };
 const minPrice = b => Math.min(...b.items.map(i => i.price));
-const icon = (id, size = 15) => `<svg width="${size}" height="${size}"><use href="#${id}"/></svg>`;
 
-function matches(b) {
-  if (state.cat && b.category !== state.cat) return false;
-  if (state.modes.size && !state.modes.has(modeOf(b))) return false;
-  if (state.pays.size && !state.pays.has(payOf(b))) return false;
-  if (state.profile && b.profile !== state.profile) return false;
-  const words = norm(state.q).split(/\s+/).filter(w => w.length >= 3 && !['de', 'para', 'una', 'uno', 'los', 'las', 'con', 'que'].includes(w));
-  if (!words.length) return true;
-  const hay = norm([b.name, b.giro, b.about, b.categoryLabel, b.zone, ...b.items.map(i => i.name)].join(' '));
-  return words.every(w => {
-    const s = SYN[w] || w;
-    return hay.includes(s) || hay.includes(s.slice(0, Math.max(4, Math.ceil(s.length * 0.7))));
-  });
+/** Cuántas palabras de la búsqueda coinciden con el negocio (0 = no aparece). */
+function score(b) {
+  if (state.cat && b.category !== state.cat) return 0;
+  if (state.mode && b.mode !== state.mode) return 0;
+  if (state.rating && !(b.rating >= state.rating)) return 0;
+  const words = norm(state.q).split(/\s+/).filter(w => w.length >= 3 && !['para', 'una', 'uno', 'los', 'las', 'con', 'que', 'quiero', 'necesito'].includes(w));
+  if (!words.length) return 1;
+  const hay = norm([b.name, b.giro, b.about, b.categoryLabel, ...b.items.map(i => i.name)].join(' ')).split(/[^a-z0-9]+/);
+  return words.filter(w => {
+    const s = norm(SYN[w] || w);
+    const stem = s.slice(0, Math.max(4, Math.ceil(s.length * .7)));
+    return hay.some(h => h.startsWith(s) || h.startsWith(stem));
+  }).length;
+}
+function filtered() {
+  const scored = all.map(b => [b, score(b)]).filter(([, s]) => s > 0);
+  const best = Math.max(0, ...scored.map(([, s]) => s));
+  return scored.filter(([, s]) => s === best).map(([b]) => b);
 }
 
 function card(b) {
-  const a = el('a', 'card');
+  const a = document.createElement('a');
+  a.className = 'card';
   a.href = '/chat?n=' + encodeURIComponent(b.id);
   a.style.setProperty('--c', b.color);
-  a.innerHTML = `
-    <div class="top"><span class="tile"></span><div><h3></h3><div class="cat"></div></div></div>
-    <p></p>
-    <div class="meta"><span class="z">${icon('i-pin')}<em></em></span><span class="h">${icon('i-clock')}<em></em></span></div>
-    <div class="tags"></div>
-    <div class="foot"><span class="price">Desde<b></b></span><span class="cta">Cotizar ${icon('i-arrow', 16)}</span></div>`;
-  a.querySelector('.tile').textContent = b.emoji;
+  a.innerHTML = `<div class="band"><span></span><span class="badge mode"></span></div>
+    <div class="body"><h3></h3><span class="stars"></span>
+    <div class="row"><span class="from">Desde<b></b></span><span class="go">Cotizar</span></div></div>`;
+  a.querySelector('.band span').textContent = b.emoji;
+  a.querySelector('.mode').textContent = `${MODE_ICON[b.mode] || ''} ${b.modeLabel || ''}`;
   a.querySelector('h3').textContent = b.name;
-  a.querySelector('.cat').textContent = [b.categoryLabel, b.profileLabel].filter(Boolean).join(' · ');
-  a.querySelector('p').textContent = b.about;
-  a.querySelector('.z em').textContent = b.zone;
-  a.querySelector('.h em').textContent = b.hours;
-  a.querySelector('.meta').querySelectorAll('em').forEach(e => e.style.fontStyle = 'normal');
-  const tags = a.querySelector('.tags');
-  tags.append(el('span', 'badge', MODES[modeOf(b)]));
-  tags.append(el('span', 'badge', b.depositPercent < 100 ? `Anticipo ${b.depositPercent}%` : 'Pago completo'));
-  a.querySelector('.price b').textContent = money(minPrice(b));
-  a.setAttribute('aria-label', `${b.name}, ${b.categoryLabel}, desde ${money(minPrice(b))}`);
+  a.querySelector('.stars').innerHTML = b.rating ? `★ ${b.rating.toFixed(1)} <small>(${b.reviews})</small>` : '<small>Nuevo</small>';
+  a.querySelector('.from b').textContent = money(minPrice(b));
+  a.setAttribute('aria-label', `${b.name}. ${b.rating ? b.rating.toFixed(1) + ' estrellas.' : ''} Desde ${money(minPrice(b))}`);
   return a;
 }
 
 function render() {
-  let list = all.filter(matches);
-  if (state.sort === 'price') list = [...list].sort((a, b) => minPrice(a) - minPrice(b));
-  if (state.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  let list = filtered();
+  if (state.sort === 'rating') list.sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.reviews - a.reviews);
+  if (state.sort === 'price') list.sort((a, b) => minPrice(a) - minPrice(b));
+  if (state.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   const box = $('results');
   box.innerHTML = '';
-  if (!list.length) {
-    const e = el('div', 'no-results');
-    e.innerHTML = '<div style="font-size:34px">🔎</div><h3>No encontramos negocios con esos filtros</h3><p>Prueba con otras palabras o quita algunos filtros.</p>';
-    const btn = el('button', 'btn', 'Limpiar filtros');
-    btn.onclick = clearAll;
-    e.append(btn);
-    box.append(e);
-  } else list.forEach(b => box.append(card(b)));
-  $('count').innerHTML = `<b>${list.length}</b> ${list.length === 1 ? 'negocio' : 'negocios'}`;
-  renderActive();
-  renderFilters($('filters'));
-  renderMobileCats();
-  syncUrl();
+  if (!list.length) box.innerHTML = '<div class="none"><div class="e">🦜</div><b>No encontré nada así.</b><br>Prueba con otra palabra o quita filtros.</div>';
+  else list.forEach(b => box.append(card(b)));
+  $('count').textContent = `${list.length} ${list.length === 1 ? 'negocio' : 'negocios'}`;
+  const hasFilters = state.q || state.cat || state.mode || state.rating;
+  $('reset').hidden = !hasFilters;
+  $('clear-q').hidden = !state.q;
+  [...$('cats').children].forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === state.cat)));
 }
 
-function renderActive() {
-  const box = $('active');
-  box.innerHTML = '';
-  const add = (label, off) => {
-    const t = el('span', 'tag', label);
-    const x = el('button', '', '×');
-    x.setAttribute('aria-label', 'Quitar filtro ' + label);
-    x.onclick = () => { off(); render(); };
-    t.append(x); box.append(t);
-  };
-  if (state.q) add(`“${state.q}”`, () => { state.q = ''; $('q').value = ''; });
-  if (state.cat) add(cats[state.cat]?.label, () => state.cat = '');
-  state.modes.forEach(m => add(MODES[m], () => state.modes.delete(m)));
-  state.pays.forEach(p => add(PAYS[p], () => state.pays.delete(p)));
-  if (state.profile) add(profiles[state.profile], () => state.profile = '');
-}
-
-function countCat(id) { return all.filter(b => !id || b.category === id).length; }
-
-function renderFilters(root) {
-  root.innerHTML = '';
-  const g1 = el('div'); g1.append(el('h4', '', 'Categoría'));
-  const list = el('div', 'cat-list');
-  for (const [id, c] of [['', { label: 'Todas', emoji: '✨' }], ...Object.entries(cats)]) {
-    if (id && !countCat(id)) continue;
-    const btn = el('button');
-    btn.type = 'button';
-    btn.setAttribute('aria-pressed', String(state.cat === id));
-    btn.append(el('span', '', c.emoji), el('span', '', c.label), el('span', 'n', String(countCat(id))));
+function buildCats() {
+  const box = $('cats');
+  for (const [id, c] of [['', { label: 'Todo', emoji: '✨' }], ...Object.entries(cats)]) {
+    if (id && !all.some(b => b.category === id)) continue;
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'cat'; btn.dataset.id = id;
+    btn.innerHTML = '<span class="e"></span><span></span>';
+    btn.firstChild.textContent = c.emoji; btn.lastChild.textContent = c.label;
     btn.onclick = () => { state.cat = id; render(); };
-    list.append(btn);
+    box.append(btn);
   }
-  g1.append(list); root.append(g1);
-
-  const checks = (title, map, set) => {
-    const g = el('div'); g.append(el('h4', '', title));
-    for (const [id, label] of Object.entries(map)) {
-      const l = el('label', 'check');
-      const i = el('input'); i.type = 'checkbox'; i.checked = set.has(id);
-      i.onchange = () => { i.checked ? set.add(id) : set.delete(id); if (root.id === 'filters') render(); };
-      l.append(i, document.createTextNode(label));
-      g.append(l);
-    }
-    root.append(g);
-  };
-  checks('Forma de atención', MODES, state.modes);
-  checks('Forma de pago', PAYS, state.pays);
-
-  const g4 = el('div'); g4.append(el('h4', '', 'Tipo de negocio'));
-  const sel = el('select', 'select');
-  sel.append(new Option('Todos', ''));
-  for (const [id, label] of Object.entries(profiles)) sel.append(new Option(label, id));
-  sel.value = state.profile;
-  sel.onchange = () => { state.profile = sel.value; if (root.id === 'filters') render(); };
-  g4.append(sel); root.append(g4);
+  for (const [id, label] of Object.entries(modes)) $('f-mode').add(new Option(`${MODE_ICON[id] || ''} ${label}`, id));
 }
 
-function renderMobileCats() {
-  const box = $('mobile-cats');
-  box.innerHTML = '';
-  for (const [id, c] of [['', { label: 'Todas', emoji: '✨' }], ...Object.entries(cats)]) {
-    if (id && !countCat(id)) continue;
-    const b = el('button', 'chip');
-    b.type = 'button';
-    b.setAttribute('aria-pressed', String(state.cat === id));
-    b.textContent = `${c.emoji} ${c.label}`;
-    b.onclick = () => { state.cat = id; render(); };
-    box.append(b);
-  }
-}
-
-function clearAll() {
-  Object.assign(state, { q: '', cat: '', profile: '' });
-  state.modes.clear(); state.pays.clear();
-  $('q').value = '';
-  render();
-}
-
-function syncUrl() {
-  const p = new URLSearchParams();
-  if (state.q) p.set('q', state.q);
-  if (state.cat) p.set('cat', state.cat);
-  const s = p.toString();
-  history.replaceState(null, '', s ? '?' + s + location.hash : location.pathname + location.hash);
-}
-
-$('hero-search').onsubmit = e => {
-  e.preventDefault();
-  state.q = $('q').value.trim();
-  render();
-  document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' });
-};
 $('q').addEventListener('input', () => { state.q = $('q').value.trim(); render(); });
-$('sort').onchange = () => { state.sort = $('sort').value; render(); };
-const sheet = $('sheet');
-$('open-filters').onclick = () => { renderFilters($('sheet-body')); sheet.showModal(); };
-$('close-sheet').onclick = () => { sheet.close(); render(); };
-$('apply-sheet').onclick = () => { sheet.close(); render(); };
-$('clear-sheet').onclick = () => { state.modes.clear(); state.pays.clear(); state.profile = ''; renderFilters($('sheet-body')); };
-sheet.addEventListener('close', render);
-
-for (const p of POPULAR) {
-  const b = el('button', '', p);
-  b.type = 'button';
-  b.onclick = () => { $('q').value = p; state.q = p; render(); document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' }); };
-  $('popular').append(b);
-}
+$('search-form').onsubmit = e => { e.preventDefault(); $('q').blur(); };
+$('clear-q').onclick = () => { $('q').value = ''; state.q = ''; render(); $('q').focus(); };
+$('f-mode').onchange = e => { state.mode = e.target.value; render(); };
+$('f-rating').onchange = e => { state.rating = Number(e.target.value); render(); };
+$('f-sort').onchange = e => { state.sort = e.target.value; render(); };
+$('reset').onclick = () => {
+  Object.assign(state, { q: '', cat: '', mode: '', rating: 0 });
+  $('q').value = ''; $('f-mode').value = ''; $('f-rating').value = '0';
+  render();
+};
 
 fetch('/api/status').then(r => r.json()).then(s => {
-  all = s.businesses; cats = s.categories || {}; profiles = s.profiles || {};
-  if (s.mode === 'simulado') { const m = $('mode'); m.hidden = false; m.textContent = 'Modo de prueba'; m.className = 'badge sim'; }
-  const p = new URLSearchParams(location.search);
-  state.q = p.get('q') || ''; state.cat = cats[p.get('cat')] ? p.get('cat') : '';
-  $('q').value = state.q;
+  all = s.businesses; cats = s.categories || {}; modes = s.modes || {};
+  if (s.mode === 'simulado') $('mode').hidden = false;
+  buildCats();
   render();
 });
 </script>

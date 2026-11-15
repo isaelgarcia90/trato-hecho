@@ -42,7 +42,7 @@ test('nlu: cantidades, celulares y texto sin sentido', () => {
 });
 
 test('flujo feliz con texto libre: plomería', async () => {
-  const job = await chat('plomeria', 'se me tapó el baño desde ayer en la noche', 'mañana en la tarde', '55 1234 5678');
+  const job = await chat('plomeria', 'se me tapó el baño desde ayer en la noche', 'mañana en la tarde', 'Morelos 45, col. Centro', '55 1234 5678');
   assert.equal(job.itemId, 'destape');
   assert.match(job.slot, /16:00/);
   assert.equal(job.phone, '5512345678');
@@ -52,7 +52,7 @@ test('flujo feliz con texto libre: plomería', async () => {
 test('texto sin sentido: pide una respuesta válida', async () => {
   const job = await chat('plomeria', 'asdkjhqwe zxcvb');
   assert.equal(job.itemId, null);
-  assert.match(last(job).text, /no logré entender/i);
+  assert.match(last(job).text, /no te entendí/i);
   assert.ok(last(job).buttons.length > 0);
 });
 
@@ -64,7 +64,7 @@ test('algo que el negocio no ofrece: lo dice y muestra opciones', async () => {
 test('detalle insuficiente: explica qué necesita', async () => {
   const job = await chat('plomeria', { action: 'item:fuga', text: 'Reparación de fuga' }, 'no sé');
   assert.equal(job.description, null);
-  assert.match(last(job).text, /necesito un poco más de detalle/);
+  assert.match(last(job).text, /necesito un poco más de detalle/i);
 });
 
 test('celular inválido: dice cuántos dígitos faltan', async () => {
@@ -79,7 +79,7 @@ test('preguntas en medio del flujo: responde y retoma', async () => {
   assert.match(job.messages.at(-1).text, /Limpieza dental: \$700\.00/);
   const job2 = await chat('barberia', 'corte y barba', '¿a qué hora abren?');
   assert.equal(job2.itemId, 'combo');
-  assert.match(last(job2).text, /Lunes a sábado/);
+  assert.match(last(job2).text, /Lun a sáb/);
   assert.match(last(job2).text, /horario/);
 });
 
@@ -107,10 +107,79 @@ test('mensaje corto pide detalles; día no disponible; detalle extra se anota', 
     .find(d => !j2.slots.some(s => nlu.norm(s).startsWith(d)));
   await agent.handleClientMessage(j2.id, { text: `el ${busy}` });
   j2 = store.getJob(j2.id);
-  assert.match(last(j2).text, new RegExp(`${busy} no tengo espacio`));
+  assert.match(last(j2).text, new RegExp(`${busy} ya no hay espacio`));
   const j3 = await chat('plomeria', 'se me tapó el baño', 'el de arriba no baja desde ayer', 'ojo, el edificio no tiene elevador');
   assert.match(j3.description, /elevador/);
   assert.match(last(j3).text, /^Anotado/);
+});
+
+test('celulares inválidos con la razón correcta', async () => {
+  const cases = [['0012345678', /no empiezan con 0 ni con 1/], ['5555555555', /no parece real/], ['55 12', /tiene 4 dígitos/]];
+  for (const [phone, re] of cases) {
+    const job = await chat('tamales', 'quiero 2 tamales verdes', phone);
+    assert.equal(job.phone, null);
+    assert.match(last(job).text, re);
+  }
+  const ok = await chat('tamales', 'quiero 2 tamales verdes', '+52 1 55 1234 5678');
+  assert.equal(ok.phone, '5512345678');
+});
+
+test('dirección por partes y validada', async () => {
+  let job = await chat('limpieza', 'limpiar mi departamento', { action: 'slot:0', text: 'x' }, 'Morelos 45');
+  assert.ok(!job.address);
+  assert.match(last(job).text, /colonia/i);
+  await agent.handleClientMessage(job.id, { text: 'Narvarte' });
+  job = store.getJob(job.id);
+  assert.equal(job.address, 'Morelos 45, Col. Narvarte');
+  const bad = await chat('limpieza', 'limpiar mi departamento', { action: 'slot:0', text: 'x' }, 'asdkj qwpo');
+  assert.ok(!bad.address);
+  assert.match(last(bad).text, /calle, número y colonia/i);
+});
+
+test('recuerda datos adelantados y acepta correcciones', async () => {
+  let job = await chat('plomeria', 'hola, me llamo Laura. Se me tapó el baño de arriba desde ayer, vivo en Morelos 45 col. Centro, mi cel 55 8765 4321');
+  assert.equal(job.name, 'Laura');
+  assert.equal(job.itemId, 'destape');
+  assert.equal(job.address, 'Morelos 45, Col. Centro');
+  assert.equal(job.phone, '5587654321');
+  assert.match(last(job).text, /Laura/);
+  await agent.handleClientMessage(job.id, { action: 'slot:0', text: 'x' });
+  job = store.getJob(job.id);
+  assert.equal(last(job).kind, 'quote');
+  await agent.handleClientMessage(job.id, { text: 'perdón, mejor cambia mi número a 55 1111 2222' });
+  job = store.getJob(job.id);
+  assert.equal(job.phone, '5511112222');
+  assert.equal(last(job).kind, 'quote');
+  assert.match(last(job).text, /Cambié tu celular/);
+});
+
+test('corrige el horario con la hora', async () => {
+  let job = await chat('plomeria', 'se me tapó el baño de arriba desde ayer', { action: 'slot:1', text: 'x' }, 'Morelos 45, col. Centro', '55 8765 4321');
+  assert.match(job.slot, /16:00/);
+  await agent.handleClientMessage(job.id, { text: 'perdón, mejor cambia a las 9' });
+  job = store.getJob(job.id);
+  assert.match(job.slot, /9:00/);
+  assert.equal(last(job).kind, 'quote');
+});
+
+test('pregunta si es un robot', async () => {
+  const job = await chat('dental', '¿eres un robot?');
+  assert.match(last(job).text, /asistente virtual/);
+});
+
+test('calificación al terminar de pagar', async () => {
+  let job = await chat('tamales', 'quiero 3 de rajas', 'QR', 'sí');
+  const payments = await import('../src/payments.js');
+  payments.handlePaymentEvent({ type: 'codi.qr.payment_received', amount: 75, transactionId: 'T-' + job.id, metadata: { chargeId: store.getJob(job.id) && job.id } }, 'e-' + job.id);
+  const charge = (await import('../src/store.js')).chargesForJob(job.id)[0];
+  payments.handlePaymentEvent({ type: 'codi.qr.payment_received', amount: 75, transactionId: 'T2-' + job.id, metadata: { chargeId: charge.id } }, 'e2-' + job.id);
+  job = store.getJob(job.id);
+  assert.equal(last(job).kind, 'rate');
+  await agent.handleClientMessage(job.id, { action: 'rate:5', text: '⭐⭐⭐⭐⭐' });
+  await agent.handleClientMessage(job.id, { text: 'Riquísimos y muy rápido' });
+  const r = store.ratingForJob(job.id);
+  assert.equal(r.stars, 5);
+  assert.equal(r.comment, 'Riquísimos y muy rápido');
 });
 
 test('pago con QR sin dar celular', async () => {

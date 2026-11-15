@@ -8,7 +8,7 @@ import { config } from './config.js';
 const file = path.resolve(config.dataFile);
 
 function empty() {
-  return { jobs: {}, charges: {}, processedEvents: {}, nextNumRef: 1000 + Math.floor(Math.random() * 8000) };
+  return { jobs: {}, charges: {}, processedEvents: {}, ratings: [], nextNumRef: 1000 + Math.floor(Math.random() * 8000) };
 }
 
 let db = empty();
@@ -104,6 +104,17 @@ export function findChargeForEvent(evt) {
     null
   );
 }
+
+// Calificaciones de clientes (una por conversación; si vuelve a calificar, se reemplaza).
+export function addRating(rating) {
+  db.ratings = db.ratings.filter(r => r.jobId !== rating.jobId);
+  const r = { at: Date.now(), ...rating };
+  db.ratings.push(r);
+  save();
+  return r;
+}
+export const ratingsFor = businessId => db.ratings.filter(r => r.businessId === businessId);
+export const ratingForJob = jobId => db.ratings.find(r => r.jobId === jobId) || null;
 
 // Idempotencia: cada evento (webhook-id o transactionId) se procesa una sola vez.
 export function markEventProcessed(key) {

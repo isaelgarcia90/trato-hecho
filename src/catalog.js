@@ -11,13 +11,17 @@ const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 export const brand = data.brand;
 export const profiles = data.profiles || {};
 export const categories = data.categories || {};
+export const modes = data.modes || {};
 export const businesses = data.businesses.map(b => ({
   agentName: brand.defaultAgentName,
   depositPercent: 100,
   emoji: '🤝',
   color: '#0f766e',
+  rating: null,
+  reviews: 0,
   ...b,
-  steps: { details: false, quantity: false, schedule: null, ...b.steps },
+  giro: b.giro || categories[b.category]?.label || '',
+  steps: { details: false, quantity: false, schedule: null, address: false, ...b.steps },
   items: b.items.map(it => ({ ...it, keywords: (it.keywords || []).map(norm) })),
 }));
 
@@ -26,11 +30,23 @@ export function getBusiness(id) {
 }
 export const defaultBusiness = businesses[0];
 
+/**
+ * Calificación combinada: la base del catálogo más las calificaciones reales de los clientes.
+ * extra: [{ stars }]
+ */
+export function ratingSummary(b, extra = []) {
+  const baseCount = b.reviews || 0;
+  const sum = (b.rating || 0) * baseCount + extra.reduce((s, r) => s + r.stars, 0);
+  const count = baseCount + extra.length;
+  return { rating: count ? Math.round((sum / count) * 10) / 10 : null, reviews: count };
+}
+
 /** Datos que puede ver cualquiera (chat, inicio). */
-export function publicBusiness(b) {
+export function publicBusiness(b, extraRatings = []) {
   return {
     id: b.id, name: b.name, owner: b.owner, giro: b.giro, zone: b.zone, hours: b.hours, agentName: b.agentName,
     category: b.category, categoryLabel: categories[b.category]?.label || null,
+    mode: b.mode, modeLabel: modes[b.mode] || null, ...ratingSummary(b, extraRatings),
     profile: b.profile, profileLabel: profiles[b.profile] || null,
     emoji: b.emoji, color: b.color, about: b.about,
     steps: b.steps, depositPercent: b.depositPercent,
