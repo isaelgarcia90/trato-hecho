@@ -99,9 +99,13 @@ test('después de dos malentendidos ofrece hablar con el negocio', async () => {
 });
 
 test('mensaje corto pide detalles; día no disponible; detalle extra se anota', async () => {
-  const job = await chat('plomeria', 'se me tapó el baño');
-  assert.equal(job.itemId, 'destape');
+  const job = await chat('electricista', 'no sirve un apagador');
   assert.equal(job.description, null);
+  assert.match(last(job).text, /¿En qué parte de la casa es?/);
+  assert.ok(last(job).buttons.some(x => x.action === 'detail:0'));
+  const baño = await chat('plomeria', 'se me tapó el baño');
+  assert.equal(baño.itemId, 'destape');
+  assert.equal(baño.description, 'se me tapó el baño');
   let j2 = await chat('plomeria', 'se me tapó el baño', 'el de arriba no baja desde ayer');
   const busy = ['domingo', 'lunes', 'martes', 'jueves', 'viernes']
     .find(d => !j2.slots.some(s => nlu.norm(s).startsWith(d)));
@@ -133,7 +137,7 @@ test('dirección por partes y validada', async () => {
   assert.equal(job.address, 'Morelos 45, Col. Narvarte');
   const bad = await chat('limpieza', 'limpiar mi departamento', { action: 'slot:0', text: 'x' }, 'asdkj qwpo');
   assert.ok(!bad.address);
-  assert.match(last(bad).text, /calle, número y colonia/i);
+  assert.match(last(bad).text, /¿Cuál es tu dirección?/);
 });
 
 test('recuerda datos adelantados y acepta correcciones', async () => {
@@ -186,4 +190,34 @@ test('pago con QR sin dar celular', async () => {
   const job = await chat('tamales', 'quiero 3 de rajas', 'QR', 'sí');
   assert.equal(job.phoneSkipped, true);
   assert.equal(last(job).kind, 'charge');
+});
+
+test('una pregunta por mensaje, con botones para contestar', async () => {
+  const job = await chat('electricista', 'no sirve un apagador', { action: 'detail:0', text: 'Cocina' });
+  assert.equal(job.description, 'Cocina');
+  for (const m of job.messages.filter(m => m.from === 'agente')) {
+    assert.ok((m.text.match(/¿/g) || []).length <= 1, 'más de una pregunta: ' + m.text);
+  }
+  const phone = await chat('tamales', 'quiero 2 tamales verdes');
+  assert.ok(last(phone).buttons.some(x => x.action === 'skip_phone'));
+  await agent.handleClientMessage(phone.id, { action: 'skip_phone', text: 'Prefiero pagar con QR' });
+  assert.equal(last(store.getJob(phone.id)).kind, 'quote');
+});
+
+test('corregir con botones', async () => {
+  let job = await chat('plomeria', 'se me tapó el baño', { action: 'slot:0', text: 'x' }, 'Morelos 45, col. Centro', '55 8765 4321', 'no');
+  assert.ok(last(job).buttons.some(x => x.action === 'edit:slot'));
+  await agent.handleClientMessage(job.id, { action: 'edit:slot', text: '🕒 Horario' });
+  job = store.getJob(job.id);
+  assert.equal(job.slot, null);
+  assert.equal(job.quote, null);
+  assert.ok(last(job).buttons.some(x => x.action === 'slot:0'));
+});
+
+test('«sin número» no se toma como colonia', () => {
+  const draft = nlu.parseAddress('Morelos');
+  const sn = nlu.parseAddress('sin número', draft);
+  assert.equal(sn.number, 'S/N');
+  assert.deepEqual(sn.missing, ['colonia']);
+  assert.equal(nlu.parseAddress('Sin número', nlu.parseAddress('Morelos 45')).number, '45');
 });

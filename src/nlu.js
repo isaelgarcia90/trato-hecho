@@ -143,7 +143,7 @@ export function parseAddress(text, prev = {}) {
     const sn = body.match(/\b(s\/n|sin numero)\b/);
     const num = sn ? null : body.match(/(?:#|\bno\.?|\bnum\.?|\bnumero)?\s*\b(\d{1,5}[a-z]?)\b/);
     const cut = sn ? sn.index : num ? num.index : -1;
-    if (sn) out.number = 'S/N';
+    if (sn) out.number = out.number || 'S/N';
     else if (num) out.number = num[1];
     const before = (cut >= 0 ? body.slice(0, cut) : body).replace(/[,#\s]+$/, '').replace(/^(la|el)\s+/, '').trim();
     const after = cut >= 0 ? body.slice(cut + (sn ? sn[0] : num[0]).length).replace(/^[,\s]+/, '').trim() : '';
@@ -152,7 +152,7 @@ export function parseAddress(text, prev = {}) {
     if (!out.colonia && after && /^[a-z .'-]{4,40}$/.test(after) && !isGibberish(after)) out.colonia = after;
   }
   // Una respuesta suelta como "Narvarte" cuando ya hay calle y número es la colonia.
-  if (!col && prev.street && prev.number && !out.colonia && !cp && /^[a-z .'-]{4,40}$/.test(t) && !isGibberish(t)) out.colonia = t;
+  if (!col && !/\b(s\/n|sin numero)\b/.test(t) && prev.street && prev.number && !out.colonia && !cp && /^[a-z .'-]{4,40}$/.test(t) && !isGibberish(t)) out.colonia = t;
   out.missing = [];
   if (!out.street) out.missing.push('street');
   if (!out.number) out.missing.push('number');

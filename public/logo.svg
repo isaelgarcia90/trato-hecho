@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Trato Hecho">
+  <!-- Burbuja de chat (la plática) + palomita (trato hecho) + flor de cempasúchil (hecho en México). -->
+  <g transform="translate(4 4)" fill="#00a19a">
+    <rect x="3" y="12" width="46" height="36" rx="13"/>
+    <path d="M10 40 L7 57 L25 46 Z"/>
+  </g>
+  <g fill="#e4007c">
+    <rect x="3" y="12" width="46" height="36" rx="13"/>
+    <path d="M10 40 L7 57 L25 46 Z"/>
+  </g>
+  <path d="M15.5 30.5 l7.5 7.5 l14 -14.5" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(51 13)">
+    <circle r="12" fill="#fff8ee"/>
+    <g fill="#ff9f1c">
+      <circle cx="0" cy="-6" r="4"/><circle cx="4.2" cy="-4.2" r="4"/><circle cx="6" cy="0" r="4"/><circle cx="4.2" cy="4.2" r="4"/>
+      <circle cx="0" cy="6" r="4"/><circle cx="-4.2" cy="4.2" r="4"/><circle cx="-6" cy="0" r="4"/><circle cx="-4.2" cy="-4.2" r="4"/>
+    </g>
+    <circle r="3.6" fill="#e86a00"/>
+  </g>
+</svg>

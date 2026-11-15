@@ -24,6 +24,9 @@ const slotButtons = job => (job.slots || []).map((s, i) => ({ label: s, action: 
 const short = s => `«${s.length > 40 ? s.slice(0, 40) + '…' : s}»`;
 const fmtPhone = p => `${p.slice(0, 2)} ${p.slice(2, 6)} ${p.slice(6)}`;
 const hi = job => (job.name ? `, ${job.name}` : '');
+const detailButtons = b => (b.detailsOptions || []).map((o, i) => ({ label: o, action: `detail:${i}` }));
+/** Opción de detalle que aparece en el texto («se me tapó el baño» → Baño). */
+const detailOption = (b, t) => (b.detailsOptions || []).find(o => new RegExp(`\\b${norm(o).split(' ')[0]}\\b`).test(norm(t)));
 
 export function greet(job) {
   const b = businessFor(job);
@@ -82,8 +85,9 @@ export function extractByRules(job, b, text, step) {
     }
 
     if (b.steps.details && !job.description && !out.question) {
-      if (step === 'details' && !out.phone && isUsefulDetail(t)) out.description = t;
-      if (step === 'item' && item && norm(t).split(' ').length >= 7 && isUsefulDetail(t)) out.description = t;
+      const opt = detailOption(b, t);
+      if (step === 'details' && !out.phone && (isUsefulDetail(t) || opt)) out.description = t;
+      if (step === 'item' && item && ((norm(t).split(' ').length >= 7 && isUsefulDetail(t)) || opt)) out.description = t;
     }
 
     if (job.slots && (step === 'slot' || out.correction)) {
@@ -248,8 +252,7 @@ export async function handleClientMessage(jobId, { text, action }) {
   if (step === 'pay') {
     if (data.affirm) return pay(job, job.phone ? 'push' : 'qr');
     if (data.deny) {
-      return say(job.id, 'agente', 'Sin problema. ¿Cambiamos algo o prefieres hablar con alguien?',
-        { buttons: [{ label: 'Cambiar algo', action: 'change' }, humanButton(b)] });
+      return say(job.id, 'agente', 'Sin problema. ¿Qué quieres cambiar?', { buttons: [...editButtons(job, b), humanButton(b)] });
     }
   }
   if (step === 'done') return statusReply(job, b, data);
@@ -274,8 +277,7 @@ export async function handleClientMessage(jobId, { text, action }) {
     }
   }
   if (data.correction && ['pay', 'phone', 'address'].includes(step)) {
-    return say(job.id, 'agente', '¿Qué quieres cambiar? Escríbelo así: «mejor el martes», «cambia mi número a…» o «la dirección es…».',
-      { buttons: [{ label: 'Empezar de nuevo', action: 'change' }] });
+    return say(job.id, 'agente', '¿Qué quieres cambiar?', { buttons: editButtons(job, b) });
   }
   return misunderstood(job, b, step, data, text || '');
 }
@@ -290,6 +292,8 @@ function handleAction(job, b, action) {
   if (action === 'change') return restart(job, b, 'Va, empecemos de nuevo. ¿Qué necesitas?');
   if (action === 'human') return handoff(job, b);
   if (action === 'prices') return nextStep(job, b, infoAnswer(b, 'prices'));
+  if (action === 'skip_phone') { job = updateJob(job.id, { phoneSkipped: true }); return nextStep(job, b); }
+  if (action.startsWith('edit:')) return editField(job, b, action.slice(5));
   if (job.quote && job.status !== 'cotizando') return statusReply(job, b, {});
   const patch = { confusions: 0 };
   if (action.startsWith('item:') && itemById(b, action.slice(5))) patch.itemId = action.slice(5);
@@ -301,8 +305,35 @@ function handleAction(job, b, action) {
     const s = job.slots?.[Number(action.slice(5))];
     if (s) patch.slot = s;
   }
+  if (action.startsWith('detail:')) {
+    const o = b.detailsOptions?.[Number(action.slice(7))];
+    if (o) patch.description = o;
+  }
   if (job.quote && Object.keys(patch).length > 1) patch.quote = null;
   job = updateJob(job.id, patch);
+  notifyJob(job.id);
+  return nextStep(job, b);
+}
+
+/** Botones para corregir un dato sin escribir. */
+function editButtons(job, b) {
+  const out = [];
+  if (b.steps.schedule && job.slot) out.push({ label: '🕒 Horario', action: 'edit:slot' });
+  if (b.steps.address && job.address) out.push({ label: '📍 Dirección', action: 'edit:address' });
+  if (job.phone) out.push({ label: '📱 Celular', action: 'edit:phone' });
+  if (b.steps.quantity && job.quantity) out.push({ label: '🔢 Cantidad', action: 'edit:quantity' });
+  out.push({ label: '↺ Empezar de nuevo', action: 'change' });
+  return out;
+}
+
+function editField(job, b, field) {
+  if (job.quote && job.status !== 'cotizando') return statusReply(job, b, {});
+  const clear = {
+    slot: { slot: null }, address: { address: null, addressDraft: null },
+    phone: { phone: null, phoneSkipped: false }, quantity: { quantity: null },
+  }[field];
+  if (!clear) return nextStep(job, b);
+  job = updateJob(job.id, { ...clear, quote: null, confusions: 0 });
   notifyJob(job.id);
   return nextStep(job, b);
 }
@@ -312,7 +343,7 @@ function rate(job, b, stars) {
   const r = addRating({ businessId: b.id, jobId: job.id, itemId: job.itemId, stars });
   updateJob(job.id, { awaitingComment: true, lastRating: r });
   notifyJob(job.id);
-  return say(job.id, 'agente', `${'⭐'.repeat(stars)} ¡Gracias! ¿Quieres dejarle un comentario a ${b.owner}? Escríbelo aquí.`,
+  return say(job.id, 'agente', `${'⭐'.repeat(stars)} ¡Gracias! ¿Le dejas un comentario a ${b.owner}?`,
     { buttons: [{ label: 'No, gracias', action: 'no_comment' }] });
 }
 
@@ -338,23 +369,22 @@ function handoff(job, b) {
 
 function phoneProblem(job, b, err) {
   const msg = {
-    none: 'Necesito tu celular de 10 dígitos (el de la app de tu banco). Si prefieres, escribe «QR».',
+    none: '¿Cuál es tu celular? Son 10 dígitos, por ejemplo 55 1234 5678.',
     length: `Ese número tiene ${err.digits} dígito${err.digits === 1 ? '' : 's'}. Un celular tiene 10, por ejemplo 55 1234 5678.`,
     prefix: 'Los celulares en México no empiezan con 0 ni con 1. ¿Me lo revisas?',
     repeated: 'Ese número no parece real. ¿Me pasas tu celular de 10 dígitos?',
     sequence: 'Ese número no parece real. ¿Me pasas tu celular de 10 dígitos?',
   }[err.reason];
-  return say(job.id, 'agente', msg, { buttons: (job.confusions || 0) >= 1 ? [humanButton(b)] : [] });
+  return say(job.id, 'agente', msg, { buttons: [qrButton, ...((job.confusions || 0) >= 1 ? [humanButton(b)] : [])] });
 }
+const qrButton = { label: 'Prefiero pagar con QR', action: 'skip_phone' };
 
 function askAddress(job, b, draft) {
   const need = draft?.missing || ['street', 'number', 'colonia'];
   const got = draft?.street ? `Tengo «${formatAddress({ ...draft, number: draft.number || '' }).replace(/ S\/N$/, '')}». ` : '';
-  let ask;
-  if (need.includes('street')) ask = '¿En qué calle?';
-  else if (need.includes('number')) ask = '¿Qué número es? Si no tiene, escribe «sin número».';
-  else ask = '¿En qué colonia? (o código postal)';
-  return say(job.id, 'agente', got + ask);
+  if (need.includes('street')) return say(job.id, 'agente', got + '¿En qué calle?');
+  if (need.includes('number')) return say(job.id, 'agente', got + '¿Qué número es?', { buttons: [{ label: 'Sin número' }] });
+  return say(job.id, 'agente', got + '¿En qué colonia?');
 }
 
 /** No entendió: explica qué necesita y cómo responder. Después de 2 intentos ofrece hablar con el negocio. */
@@ -373,12 +403,12 @@ function misunderstood(job, b, step, data, text) {
   if (step === 'quantity') return say(job.id, 'agente', `${sorry}¿Cuántos quieres? Escribe un número o toca una opción.`, { buttons: [...qtyButtons(), ...extra] });
   if (step === 'details') {
     const ex = b.detailsExample ? ` Por ejemplo: «${b.detailsExample}».` : '';
-    const why = data.question ? 'Primero necesito un dato: ' : `${sorry}Necesito un poco más de detalle para darte el precio correcto. `;
-    return say(job.id, 'agente', `${why}${b.detailsPrompt || 'Cuéntame más.'}${ex}`, { buttons: extra });
+    const why = data.question ? 'Primero necesito un dato. ' : `${sorry}Necesito un poco más de detalle. `;
+    return say(job.id, 'agente', `${why}${b.detailsPrompt || '¿Qué pasa exactamente?'}${ex}`, { buttons: [...detailButtons(b), ...extra] });
   }
   if (step === 'slot') return say(job.id, 'agente', `${sorry}¿Qué horario prefieres? Toca una opción.`, { buttons: [...slotButtons(job), ...extra] });
   if (step === 'address') {
-    if (data.gibberish) return say(job.id, 'agente', 'No te entendí. Escribe calle, número y colonia, por ejemplo: «Morelos 45, col. Centro».', { buttons: extra });
+    if (data.gibberish) return say(job.id, 'agente', 'No te entendí. ¿Cuál es tu dirección?\nPor ejemplo: Morelos 45, col. Centro', { buttons: extra });
     return askAddress(job, b, job.addressDraft);
   }
   if (step === 'phone') return phoneProblem(job, b, data.phoneError || { reason: 'none' });
@@ -392,7 +422,7 @@ function statusReply(job, b, data) {
   if (data.intents?.includes('thanks')) return say(job.id, 'agente', `¡A ti${hi(job)}! Aquí estamos.`);
   if (job.status.startsWith('esperando')) {
     const amount = job.status === 'esperando_restante' ? pending : job.quote.deposit;
-    return say(job.id, 'agente', `Espero tu pago de ${money(amount)}. Si ya lo aprobaste, te confirmo en segundos. ¿Te lo mando otra vez?`,
+    return say(job.id, 'agente', `Espero tu pago de ${money(amount)}. Al aprobarlo te confirmo aquí.`,
       { buttons: payButtons(job, false) });
   }
   if (job.status === 'confirmada') {
@@ -424,7 +454,10 @@ function nextStep(job, b, prefix = '', { extraButtons = [] } = {}) {
   if (step === 'item') return say(job.id, 'agente', `${lead}¿Qué necesitas?`, { buttons: [...itemButtons(b), ...extraButtons] });
   const item = itemById(b, job.itemId);
   if (step === 'quantity') return say(job.id, 'agente', `${lead}${item.name}, ${money(item.price)} c/u. ¿Cuántos?`, { buttons: [...qtyButtons(), ...extraButtons] });
-  if (step === 'details') return say(job.id, 'agente', `${lead}${item.name}, entendido. ${b.detailsPrompt || 'Cuéntame un poco más.'}`, { buttons: extraButtons });
+  if (step === 'details') {
+    return say(job.id, 'agente', `${lead}${item.name}, entendido. ${b.detailsPrompt || '¿Qué pasa exactamente?'}`,
+      { buttons: [...detailButtons(b), ...extraButtons] });
+  }
   if (step === 'slot') {
     const first = !job.slots;
     const slots = job.slots || availableSlots(b);
@@ -436,10 +469,10 @@ function nextStep(job, b, prefix = '', { extraButtons = [] } = {}) {
   if (step === 'address') {
     if (job.addressDraft?.street) return askAddress(job, b, job.addressDraft);
     const q = b.steps.schedule === 'entrega' ? '¿A dónde lo llevamos?' : '¿A qué dirección vamos?';
-    return say(job.id, 'agente', `${lead}${q} Calle, número y colonia.`, { buttons: extraButtons });
+    return say(job.id, 'agente', `${lead}${q}\nPor ejemplo: Morelos 45, col. Centro`, { buttons: extraButtons });
   }
   if (step === 'phone') {
-    return say(job.id, 'agente', `${lead}¿A qué celular te mando el cobro? Son 10 dígitos. O escribe «QR».`, { buttons: extraButtons });
+    return say(job.id, 'agente', `${lead}¿A qué celular te mando el cobro?`, { buttons: [qrButton, ...extraButtons] });
   }
 
   // Cotización.
@@ -471,7 +504,7 @@ async function pay(job, method) {
   if (!job.quote) return nextStep(job, b);
   if (method === 'push' && !job.phone) {
     updateJob(job.id, { phoneSkipped: false });
-    return say(job.id, 'agente', 'Para mandarte el cobro necesito tu celular de 10 dígitos. ¿Cuál es?');
+    return say(job.id, 'agente', '¿Cuál es tu celular? Son 10 dígitos.', { buttons: [qrButton] });
   }
   try {
     const kind = job.status === 'confirmada' || job.status === 'esperando_restante' ? 'restante' : firstChargeKind(job);
@@ -487,6 +520,6 @@ async function pay(job, method) {
   } catch (err) {
     console.error('[pay]', err.message);
     const friendly = /celular/i.test(err.message) ? err.message : 'No pude generar el cobro en este momento.';
-    return say(job.id, 'agente', `${friendly} ¿Lo intentamos otra vez?`, { buttons: payButtons(job) });
+    return say(job.id, 'agente', `${friendly}`, { buttons: payButtons(job) });
   }
 }

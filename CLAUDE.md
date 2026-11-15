@@ -8,7 +8,9 @@ Negocios en `config/businesses.json`: 38 negocios en 9 categorías, con `mode` (
 `rating`/`reviews` de ejemplo y `steps` (details, quantity, schedule, address). El agente (src/agent.js + src/nlu.js)
 valida celulares MX, direcciones por partes, recuerda datos adelantados, acepta correcciones, pasa al negocio
 (`needsHuman`, respuesta desde el panel) y pide calificación al pagar (`db.ratings`).
-Inicio: historia de 4 capítulos con scroll horizontal fijo (mascotas que giran) + buscador con 3 filtros.
+Inicio: historia de 4 capítulos con scroll horizontal fijo (íconos que giran: 🔨 💅 🐶 🚀) + buscador con 3 filtros.
+Logo en public/logo.svg (burbuja rosa con palomita + cempasúchil). El agente hace una pregunta por mensaje
+con botones (`detailsOptions`, `skip_phone`, `edit:*`).
 Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 
 ## Fechas y reglas que importan

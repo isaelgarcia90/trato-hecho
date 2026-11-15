@@ -9,13 +9,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="top">
     <div class="picado-row" aria-hidden="true"><div class="picado"></div><div class="picado"></div><div class="picado"></div><div class="picado"></div><div class="picado"></div></div>
     <div class="bar">
-      <a class="logo" href="/"><span class="mark">🤝</span>Trato Hecho</a>
+      <a class="logo" href="/" aria-label="Trato Hecho, inicio"><img class="mark" src="/logo.svg" alt=""><span><b>Trato <em>Hecho</em></b><small>Cuentas claras</small></span></a>
       <div class="right">
         <span id="mode" class="badge sim hide-sm" hidden>Modo de prueba</span>
         <a class="btn sm hide-sm" href="/panel">Soy negocio</a>
@@ -31,22 +32,22 @@
         <div class="track" id="track">
           <article class="panel-s">
             <div class="mascot-wrap" aria-hidden="true">
-              <div class="blob" style="--m:#ffd3e8"></div><div class="mascot">🦜</div>
+              <div class="blob" style="--m:#ffd3e8"></div><div class="mascot">🔨</div>
               <div class="prop a">Se tapó mi baño 😩</div>
-              <div class="prop b">¡Te ayudo! ¿Desde cuándo?</div>
+              <div class="prop b">¡Te ayudo! ¿En qué parte?</div>
             </div>
             <div>
               <div class="num">01 · Pide</div>
               <h2>Dile qué <em>necesitas</em>.</h2>
               <p>Escribe como en WhatsApp. Clarito te entiende.</p>
-              <div class="chips"><span>🔧 Plomero</span><span>🍰 Pastel</span><span>📚 Clases</span></div>
+              <div class="chips"><span>🔨 Hogar</span><span>💅 Belleza</span><span>🐶 Mascotas</span><span>🚀 Emprendedores</span></div>
             </div>
           </article>
           <article class="panel-s flip">
             <div class="mascot-wrap" aria-hidden="true">
-              <div class="blob" style="--m:#ffe9b8"></div><div class="mascot">🐢</div>
-              <div class="prop a"><small>Destapar WC</small>$380</div>
-              <div class="prop b"><small>Para apartar</small>$190</div>
+              <div class="blob" style="--m:#ffe9b8"></div><div class="mascot">💅</div>
+              <div class="prop a"><small>Uñas acrílicas</small>$450</div>
+              <div class="prop b"><small>Para apartar</small>$135</div>
             </div>
             <div>
               <div class="num">02 · Cotiza</div>
@@ -57,7 +58,7 @@
           <article class="panel-s">
             <div class="mascot-wrap" aria-hidden="true">
               <div class="blob" style="--m:#cff3ef"></div><div class="mascot">🐶</div>
-              <div class="prop a">✅ Pago recibido</div>
+              <div class="prop a">✅ Baño de perrito pagado</div>
               <div class="prop b"><small>Comisión</small>$0</div>
             </div>
             <div>
@@ -68,9 +69,9 @@
           </article>
           <article class="panel-s flip">
             <div class="mascot-wrap" aria-hidden="true">
-              <div class="blob" style="--m:#e7dcff"></div><div class="mascot">🦋</div>
+              <div class="blob" style="--m:#e7dcff"></div><div class="mascot">🚀</div>
               <div class="prop a">⭐⭐⭐⭐⭐</div>
-              <div class="prop b">📅 Cita confirmada</div>
+              <div class="prop b">📦 Pedido de Emi listo</div>
             </div>
             <div>
               <div class="num">04 · Listo</div>
@@ -205,7 +206,7 @@ function render() {
   if (state.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   const box = $('results');
   box.innerHTML = '';
-  if (!list.length) box.innerHTML = '<div class="none"><div class="e">🦜</div><b>No encontré nada así.</b><br>Prueba con otra palabra o quita filtros.</div>';
+  if (!list.length) box.innerHTML = '<div class="none"><div class="e">🔎</div><b>No encontré nada así.</b><br>Prueba con otra palabra o quita filtros.</div>';
   else list.forEach(b => box.append(card(b)));
   $('count').textContent = `${list.length} ${list.length === 1 ? 'negocio' : 'negocios'}`;
   const hasFilters = state.q || state.cat || state.mode || state.rating;

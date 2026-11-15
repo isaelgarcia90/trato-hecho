@@ -1,7 +1,9 @@
+<img src="public/logo.svg" alt="" width="72">
+
 # Trato Hecho · Cuentas claras
 
-Cotiza, aparta y paga **por chat** con los negocios de tu colonia: el plomero, la estética, la señora de los
-tamales o la freelancer de diseño. **Clarito**, el asistente de cada negocio, entiende lo que escribes, te da un
+Cotiza, aparta y paga **por chat** con cualquier negocio: el plomero, la estética de uñas, la estética canina o
+la niña que vende pulseras. **Clarito**, el asistente de cada negocio, entiende lo que escribes, te da un
 precio claro y te cobra con **CoDi** (API de pey), sin tarjeta y sin comisión.
 
 Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
@@ -18,17 +20,18 @@ Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
 1. Desliza la historia del inicio y busca un servicio (por ejemplo "plomero" o "tamales").
 2. En el chat escribe con tus palabras: `hola, me llamo Laura, se me tapó el baño desde ayer`.
    Prueba también cosas raras: `asdfgh`, `quiero una pizza`, un celular como `1234567890`.
-3. Da tu dirección y celular, y pide el cobro. Toca **"Simular que pagué"** y califica al negocio.
+3. Contesta tocando los botones (horario, dirección, celular) y pide el cobro. Toca **"Simular que pagué"** y califica al negocio.
 4. En el panel ves el trato, el pago y la calificación en vivo, y puedes responderle al cliente.
 
 ## Qué tiene
 
 - **38 negocios en 9 categorías**, con calificación, precio desde y dónde atiende (va a tu casa, en su local,
   en línea o para llevar). Búsqueda, categorías y 3 filtros simples.
-- **Agente que valida todo** ([`src/agent.js`](src/agent.js), [`src/nlu.js`](src/nlu.js)):
+- **Agente que pregunta una cosa a la vez**, con botones para contestar sin escribir. Valida cada dato ([`src/agent.js`](src/agent.js), [`src/nlu.js`](src/nlu.js)):
   - Celulares reales de México (10 dígitos; no empiezan con 0 o 1; ni repetidos ni consecutivos; acepta +52).
   - Direcciones por partes: calle, número (o "sin número", manzana y lote) y colonia o código postal.
-  - Recuerda lo que ya dijiste (nombre, dirección, celular) y acepta correcciones ("mejor a las 9").
+  - Recuerda lo que ya dijiste (nombre, dirección, celular) y acepta correcciones ("mejor a las 9")
+    o con botones: 🕒 Horario, 📍 Dirección, 📱 Celular.
   - Si no entiende, explica qué le falta; tras dos intentos, ofrece hablar con el negocio.
 - **Calificaciones**: al pagar, el cliente da de 1 a 5 estrellas y un comentario opcional.
 - **Pago con CoDi** por notificación a la app del banco o por QR. El webhook de pey se verifica con firma
@@ -52,7 +55,7 @@ solos, sin tocar nada.
 ```bash
 npm install
 npm start      # http://localhost:3000 (sin PEY_API_KEY corre en modo de prueba)
-npm test       # 26 pruebas, incluidas conversaciones completas y el modo automático
+npm test       # 29 pruebas, incluidas conversaciones completas y el modo automático
 ```
 
 Los negocios se editan en [`config/businesses.json`](config/businesses.json). Las calificaciones iniciales del
