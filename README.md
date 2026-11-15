@@ -8,10 +8,22 @@ precio claro y te cobra con **CoDi** (API de pey), sin tarjeta y sin comisión.
 
 Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
 
+> [!IMPORTANT]
+> **¿Por qué la demo muestra "Cobro de prueba"?** Porque **la cuenta CLABE en pey sigue en "Pending"**.
+>
+> - La cuenta bancaria se dio de alta en pey el **15 de noviembre de 2026**. pey tarda **hasta 5 días hábiles**
+>   en validarla.
+> - Mientras tanto, pey rechaza todo cobro real con `400: API key does not have CoDi enabled`.
+> - **El código ya está listo para cobrar de verdad:** cada cobro se intenta primero en pey. Si pey lo rechaza,
+>   ese cobro pasa a modo de prueba y lo dice en pantalla.
+> - **En cuanto pey active la cuenta, los cobros serán reales ($0.01) sin cambiar código ni configuración.**
+>   El pago lo confirma el webhook firmado de pey.
+
 | | |
 |---|---|
 | **Demo** | https://trato-hecho-l22c.onrender.com |
 | **Panel del negocio** | https://trato-hecho-l22c.onrender.com/panel |
+| **Presentación con voz** (unos 3 min, avanza sola) | https://trato-hecho-l22c.onrender.com/presentacion |
 
 > Render gratis: si nadie lo usó en 15 minutos, la primera carga tarda ~50 s.
 
@@ -20,8 +32,17 @@ Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
 1. Desliza la historia del inicio y busca un servicio (por ejemplo "plomero" o "tamales").
 2. En el chat escribe con tus palabras: `hola, me llamo Laura, se me tapó el baño desde ayer`.
    Prueba también cosas raras: `asdfgh`, `quiero una pizza`, un celular como `1234567890`.
-3. Contesta tocando los botones (horario, dirección, celular) y pide el cobro. Toca **"Simular que pagué"** y califica al negocio.
+3. Contesta tocando los botones (horario, dirección, celular) y, para pagar, elige **QR**.
+   Mientras pey siga pendiente, toca **"Simular que pagué"** y califica al negocio.
 4. En el panel ves el trato, el pago y la calificación en vivo, y puedes responderle al cliente.
+
+> [!TIP]
+> **Para pagar, usa el QR.** La notificación al celular solo está habilitada para el número del equipo
+> (`ALLOWED_PHONES`): con cualquier otro número el cobro sale de prueba y el chat sugiere el QR. Así nadie puede
+> mandar solicitudes de cobro al celular de otra persona.
+>
+> **Abre la demo en la computadora y escanea el QR con tu celular.** Si la abres en el mismo celular con el que
+> vas a pagar, no puedes escanear tu propia pantalla.
 
 ## Qué tiene
 

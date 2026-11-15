@@ -49,14 +49,16 @@ Proyecto para el Cursor Hackatón México 2026, sede CDMX.
   idempotencia por webhook-id.
 - `src/pey.js` cliente HTTP; sin PEY_API_KEY → modo simulado.
 - `src/store.js` JSON en `data/db.json` (en Render free el disco es efímero: aceptable para la demo).
-- `public/` chat.html (estilo WhatsApp, `?n=<negocio>`), panel.html (filtro por negocio), index.html.
+- `public/` chat.html (estilo WhatsApp, `?n=<negocio>`), panel.html (filtro por negocio), index.html,
+  presentacion.html (`/presentacion`: 9 slides narrados con speechSynthesis es-MX, subtítulos, avanzan solos, ~3 min).
 
 ## Estado
 - Probado: flujo completo en modo simulado; modo producción contra un pey falso (forma del body correcta);
   firma inválida → 400, válida → confirma cita, duplicado → ignorado; QR se dibuja desde qrString.
 - Repo público: https://github.com/isaelgarcia90/trato-hecho (rama master; push → Render redeploya solo).
 - Live: https://trato-hecho-l22c.onrender.com (Render free, servicio `trato-hecho`). Variables en Render:
-  PEY_API_KEY, PEY_WEBHOOK_SECRET, ALLOWED_PHONES, DEMO_CHARGE_AMOUNT=0.01, PANEL_PASSWORD y PEY_MOCK=1.
+  PEY_API_KEY, PEY_WEBHOOK_SECRET, ALLOWED_PHONES (solo el número del equipo), DEMO_CHARGE_AMOUNT=0.01.
+  PEY_MOCK ya se borró (modo automático) y PANEL_PASSWORD se quitó para que los jueces vean el panel.
 - pey real (15 nov 2026): la key se acepta, pero /codi/pn y /codi/qr responden
   `400 API key does not have CoDi enabled` porque la cuenta bancaria está en Pending (hasta 5 días hábiles).
   Webhook configurado y verificado (sin firma → 400).
@@ -64,10 +66,11 @@ Proyecto para el Cursor Hackatón México 2026, sede CDMX.
   (charge.testReason = pey|phone|mock) y /api/status.mode = auto-prueba. Simular solo cobros de prueba (real → 403).
 
 ## Pendiente (en orden)
-1. Borrar PEY_MOCK en Render (modo automático). Cuando pey active la cuenta, hacer un cobro real de $0.01 (push; si falla, QR).
+1. Cuando pey active la cuenta, hacer un cobro real de $0.01 (push a tu número; si falla, QR). No requiere cambios.
    Revisar logs `[pay]` y `[webhook]`. Obligatorio antes del 12 dic 2026.
 2. Video ≤ 3 min con un cobro CoDi completo.
-3. Migrar a Postgres (Neon/Supabase) y después a Vercel; WhatsApp Business API.
+3. Volver a poner PANEL_PASSWORD al terminar la evaluación.
+4. Migrar a Postgres (Neon/Supabase) y después a Vercel; WhatsApp Business API.
 
 ## Ideas para las 4 semanas (no implementadas)
 - WhatsApp Business API real; multi-negocio; recordatorios; reportes de comisiones ahorradas.

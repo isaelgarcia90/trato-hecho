@@ -68,6 +68,7 @@ function panelAuth(req, res, next) {
 app.get(['/panel', '/panel.html'], panelAuth, (req, res) => res.sendFile(path.join(publicDir, 'panel.html')));
 app.use(express.static(publicDir, { index: 'index.html' }));
 app.get('/chat', (req, res) => res.sendFile(path.join(publicDir, 'chat.html')));
+app.get('/presentacion', (req, res) => res.sendFile(path.join(publicDir, 'presentacion.html')));
 
 // ---------- API del cliente ----------
 app.get('/api/status', (req, res) => {
