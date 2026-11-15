@@ -3,9 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Webhook } from 'standardwebhooks';
 import { config } from './config.js';
-import { business } from './catalog.js';
+import { brand, businesses, defaultBusiness, getBusiness, publicBusiness } from './catalog.js';
 import { greet, handleClientMessage } from './agent.js';
-import { chargeJob, handlePaymentEvent, money, notifyJob, publicJob, say } from './payments.js';
+import { businessFor, chargeJob, handlePaymentEvent, money, notifyJob, publicJob, say } from './payments.js';
 import { createJob, getCharge, getJob, listJobs, newId, updateJob } from './store.js';
 import { subscribe } from './events.js';
 
@@ -72,7 +72,8 @@ app.get('/chat', (req, res) => res.sendFile(path.join(publicDir, 'chat.html')));
 // ---------- API del cliente ----------
 app.get('/api/status', (req, res) => {
   res.json({
-    business,
+    brand,
+    businesses: businesses.map(publicBusiness),
     mode: config.peyMock ? 'simulado' : 'produccion',
     demoChargeAmount: config.demoChargeAmount,
     llm: Boolean(config.llmApiKey),
@@ -80,7 +81,8 @@ app.get('/api/status', (req, res) => {
 });
 
 app.post('/api/jobs', (req, res) => {
-  const job = createJob();
+  const business = getBusiness(req.body?.businessId) || defaultBusiness;
+  const job = createJob(business.id);
   greet(job);
   notifyJob(job.id);
   res.status(201).json(publicJob(getJob(job.id)));
@@ -126,7 +128,7 @@ app.post('/api/panel/jobs/:id/extras', panelAuth, (req, res) => {
   if (!job || !job.quote) return res.status(400).json({ error: 'El trabajo no tiene cotización' });
   if (!concept || !(amount > 0)) return res.status(400).json({ error: 'Concepto y monto > 0 requeridos' });
   updateJob(job.id, { extras: [...job.extras, { id: newId(), concept, amount }] });
-  say(job.id, 'agente', `Don Beto agregó a tu cuenta: ${concept} (${money(amount)}).`);
+  say(job.id, 'agente', `${businessFor(job).owner} agregó a tu cuenta: ${concept} (${money(amount)}).`);
   notifyJob(job.id);
   res.json(publicJob(getJob(job.id)));
 });
@@ -138,8 +140,8 @@ app.post('/api/panel/jobs/:id/charge', panelAuth, async (req, res) => {
   try {
     const charge = await chargeJob(job, 'restante', method);
     say(job.id, 'agente', method === 'push'
-      ? `Trabajo terminado. Te mandé el cobro de ${money(charge.quotedAmount)} a tu app del banco.`
-      : `Trabajo terminado. Escanea este QR para pagar ${money(charge.quotedAmount)}:`,
+      ? `Te mandé el cobro de lo que resta, ${money(charge.quotedAmount)}, a tu app del banco.`
+      : `Escanea este QR para pagar lo que resta, ${money(charge.quotedAmount)}:`,
     { kind: 'charge', chargeId: charge.id, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
     res.json(publicJob(getJob(job.id)));
   } catch (err) {
@@ -162,5 +164,5 @@ app.post('/api/dev/simulate-payment/:chargeId', (req, res) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`Chamba en http://localhost:${config.port}  (pey: ${config.peyMock ? 'SIMULADO' : 'producción'}, LLM: ${config.llmApiKey ? config.llmModel : 'reglas'})`);
+  console.log(`${brand.name} en http://localhost:${config.port}  (pey: ${config.peyMock ? 'SIMULADO' : 'producción'}, LLM: ${config.llmApiKey ? config.llmModel : 'reglas'})`);
 });

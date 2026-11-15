@@ -3,34 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chamba · cotiza y cobra con CoDi</title>
+  <title>Trato Hecho · Cuentas claras</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <main class="landing">
     <span id="mode" class="badge">…</span>
-    <h1>Chamba</h1>
-    <p>Un agente que atiende por chat a los clientes de un plomero, electricista o cualquier oficio:
-      cotiza con los precios del negocio, agenda la cita y <b>cobra el anticipo con CoDi</b>, sin comisión
-      ni contracargos. En cuanto el banco confirma el pago, la cita queda apartada sola y el negocio lo ve en su panel.</p>
+    <h1>Trato Hecho <span class="tagline">· Cuentas claras</span></h1>
+    <p>Un asistente por chat para cualquier negocio, formal o informal: el plomero, la señora de los tamales,
+      la chava que vende postres por encargo o el freelancer. <b>Clarito</b> atiende a los clientes, cotiza con los
+      precios del negocio, agenda si hace falta y <b>cobra con CoDi</b>, sin comisión ni contracargos.
+      En cuanto el banco confirma el pago, el trato queda cerrado y el negocio lo ve en su panel.</p>
+
+    <h3>Prueba con un negocio de ejemplo</h3>
+    <div id="businesses" class="biz-grid"></div>
+
     <div class="actions">
-      <a href="/chat">Abrir chat como cliente</a>
       <a class="secondary" href="/panel">Ver panel del negocio</a>
     </div>
+
     <h3>Cómo probarlo</h3>
     <ol>
-      <li>Abre el chat en tu celular y cuéntale tu problema (por ejemplo: "se tapó el baño").</li>
-      <li>Elige horario y deja tu celular de 10 dígitos.</li>
+      <li>Elige un negocio y escribe lo que necesitas (por ejemplo: "se tapó el baño" o "quiero 10 tamales verdes").</li>
+      <li>Responde lo que te pregunte: cantidad, horario o entrega, según el negocio, y tu celular de 10 dígitos.</li>
       <li>Pide que te manden el cobro a tu app del banco, o paga con el QR.</li>
       <li>Aprueba el pago en tu banco: el chat y el panel cambian a "pagado" en cuanto pey confirma.</li>
-      <li>Desde el panel, agrega un cargo extra y cobra el restante al terminar el trabajo.</li>
+      <li>En la plomería, agrega un cargo extra desde el panel y cobra el restante al terminar el trabajo.</li>
     </ol>
   </main>
   <script>
+    const FLOW = {
+      cita: 'Servicio con cita',
+      entrega: 'Pedido con fecha de entrega',
+      none: 'Venta directa',
+    };
+    const money = n => '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     fetch('/api/status').then(r => r.json()).then(s => {
       const el = document.getElementById('mode');
       el.textContent = s.mode === 'simulado' ? 'Modo simulado (sin API key de pey)' : 'Conectado a pey en producción';
       el.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');
+      const box = document.getElementById('businesses');
+      for (const b of s.businesses) {
+        const a = document.createElement('a');
+        a.className = 'biz-card';
+        a.href = '/chat?n=' + encodeURIComponent(b.id);
+        const pay = b.depositPercent < 100 ? `Anticipo del ${b.depositPercent}%` : 'Pago completo';
+        const from = Math.min(...b.items.map(i => i.price));
+        a.innerHTML = '<b></b><span class="flow"></span><small></small><span class="go">Abrir chat ›</span>';
+        a.querySelector('b').textContent = b.name;
+        a.querySelector('.flow').textContent = FLOW[b.steps.schedule || 'none'] + ' · ' + pay;
+        a.querySelector('small').textContent = b.giro + ' · desde ' + money(from) + ' · atiende ' + b.agentName;
+        box.appendChild(a);
+      }
     });
   </script>
 </body>

@@ -27,12 +27,13 @@ function save() {
 
 export const newId = () => crypto.randomUUID().slice(0, 8);
 
-export function createJob() {
+export function createJob(businessId) {
   const job = {
     id: newId(),
+    businessId,
     createdAt: Date.now(),
-    step: 'inicio',
-    serviceId: null,
+    itemId: null,
+    quantity: null,
     description: null,
     slot: null,
     slots: null,
@@ -40,7 +41,8 @@ export function createJob() {
     name: null,
     quote: null,
     extras: [],
-    status: 'cotizando', // cotizando | esperando_anticipo | confirmada | esperando_restante | pagada
+    // cotizando | esperando_anticipo | esperando_pago | confirmada | esperando_restante | pagada
+    status: 'cotizando',
     messages: [],
   };
   db.jobs[job.id] = job;

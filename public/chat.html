@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Chat · Plomería Don Beto</title>
+  <title>Chat · Trato Hecho</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div class="phone">
     <div class="chat-head">
-      <div class="avatar">DB</div>
-      <div><b id="biz">Plomería Don Beto</b><small>Asistente · responde al momento</small></div>
+      <a class="back" href="/" aria-label="Volver al inicio">‹</a>
+      <div class="avatar" id="avatar">TH</div>
+      <div><b id="biz">Trato Hecho</b><small id="agent">Asistente · responde al momento</small></div>
       <span id="mode" class="badge"></span>
     </div>
     <div id="msgs" class="msgs" aria-live="polite"></div>
@@ -93,19 +94,34 @@ document.getElementById('composer').onsubmit = e => {
 async function start() {
   const status = await (await fetch('/api/status')).json();
   simulated = status.mode === 'simulado';
-  document.getElementById('biz').textContent = status.business.name;
   const mode = document.getElementById('mode');
   if (simulated) { mode.textContent = 'simulado'; mode.className = 'badge sim'; }
 
+  // ?n=<negocio> abre el chat de ese negocio; ?j=<id> retoma una conversación; ?nuevo empieza otra.
   const params = new URLSearchParams(location.search);
-  const id = params.get('j') || (params.has('nuevo') ? null : store.get('chamba_job'));
+  const known = id => status.businesses.some(b => b.id === id);
+  let businessId = known(params.get('n')) ? params.get('n') : status.businesses[0].id;
+  const id = params.get('j') || (params.has('nuevo') ? null : store.get('trato_job_' + businessId));
   if (id) {
     const r = await fetch('/api/jobs/' + id);
     if (r.ok) job = await r.json();
+    if (job && params.has('n') && job.businessId !== businessId) job = null;
   }
-  if (!job) job = await (await fetch('/api/jobs', { method: 'POST' })).json();
-  store.set('chamba_job', job.id);
+  if (!job) {
+    job = await (await fetch('/api/jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ businessId }),
+    })).json();
+  }
+  businessId = job.businessId || businessId;
+  store.set('trato_job_' + businessId, job.id);
   history.replaceState(null, '', '/chat?j=' + job.id);
+
+  const biz = status.businesses.find(b => b.id === businessId) || status.businesses[0];
+  document.title = 'Chat · ' + biz.name;
+  document.getElementById('biz').textContent = biz.name;
+  document.getElementById('agent').textContent = biz.agentName + ' · asistente · responde al momento';
+  document.getElementById('avatar').textContent =
+    biz.name.split(/\s+/).filter(w => w.length > 2).slice(0, 2).map(w => w[0].toUpperCase()).join('');
   job.messages.forEach(render);
 
   const es = new EventSource('/api/events?jobId=' + job.id);

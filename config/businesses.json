@@ -1,0 +1,64 @@
+{
+  "brand": { "name": "Trato Hecho", "tagline": "Cuentas claras", "defaultAgentName": "Clarito" },
+  "businesses": [
+    {
+      "id": "plomeria",
+      "name": "Plomería Don Beto",
+      "owner": "Don Beto",
+      "giro": "plomería",
+      "zone": "CDMX",
+      "greeting": "Te ayudo a cotizar y agendar. ¿Qué problema tienes en casa?",
+      "steps": { "details": true, "quantity": false, "schedule": "cita" },
+      "detailsPrompt": "Cuéntame un poco más: ¿dónde es y desde cuándo pasa?",
+      "depositPercent": 50,
+      "items": [
+        { "id": "fuga", "name": "Reparación de fuga", "price": 450,
+          "keywords": ["fuga", "gotea", "goteo", "gotera", "tira agua", "escurre", "llave", "mezcladora"] },
+        { "id": "destape", "name": "Destape de drenaje o WC", "price": 380,
+          "keywords": ["destape", "tapad", "tapó", "tapo", "drenaje", "coladera", "baño", "wc", "excusado", "taza", "lavabo", "fregadero"] },
+        { "id": "calentador", "name": "Instalación de calentador", "price": 950,
+          "keywords": ["calentador", "boiler", "bóiler", "agua caliente", "regadera fría"] },
+        { "id": "tinaco", "name": "Limpieza o revisión de tinaco", "price": 600,
+          "keywords": ["tinaco", "cisterna", "bomba", "presión"] },
+        { "id": "revision", "name": "Visita de diagnóstico", "price": 200,
+          "keywords": ["revis", "diagnóstico", "diagnostico", "no sé", "no se", "otro", "ver qué", "checar"] }
+      ]
+    },
+    {
+      "id": "postres",
+      "name": "Postres de Sofi",
+      "owner": "Sofi",
+      "giro": "postres por encargo",
+      "zone": "CDMX",
+      "greeting": "¿Qué se te antoja encargar?",
+      "steps": { "details": false, "quantity": true, "schedule": "entrega" },
+      "depositPercent": 100,
+      "items": [
+        { "id": "pastel", "name": "Pastel de chocolate (10 personas)", "price": 380,
+          "keywords": ["pastel", "chocolate", "cumpleaños", "torta"] },
+        { "id": "cupcakes", "name": "Cupcakes (caja de 6)", "price": 240,
+          "keywords": ["cupcake", "panquecito", "mantecada"] },
+        { "id": "galletas", "name": "Galletas decoradas (docena)", "price": 220,
+          "keywords": ["galleta"] },
+        { "id": "gelatinas", "name": "Gelatinas de mosaico (docena)", "price": 180,
+          "keywords": ["gelatina", "mosaico"] }
+      ]
+    },
+    {
+      "id": "tamales",
+      "name": "Tamales Doña Mary",
+      "owner": "Doña Mary",
+      "giro": "tamales y atole",
+      "zone": "CDMX",
+      "greeting": "¿Qué te sirvo hoy?",
+      "steps": { "details": false, "quantity": true, "schedule": null },
+      "depositPercent": 100,
+      "items": [
+        { "id": "verde", "name": "Tamal verde", "price": 25, "keywords": ["verde", "salsa verde", "pollo"] },
+        { "id": "rajas", "name": "Tamal de rajas con queso", "price": 25, "keywords": ["rajas", "queso"] },
+        { "id": "dulce", "name": "Tamal de dulce", "price": 22, "keywords": ["dulce", "rosa", "pasas"] },
+        { "id": "atole", "name": "Atole (vaso)", "price": 20, "keywords": ["atole", "champurrado", "vaso"] }
+      ]
+    }
+  ]
+}

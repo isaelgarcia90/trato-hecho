@@ -1,7 +1,7 @@
 {
-  "name": "chamba",
+  "name": "trato-hecho",
   "version": "0.1.0",
-  "description": "Agente que cotiza servicios de oficios por chat y cobra el anticipo con CoDi (API de pey).",
+  "description": "Trato Hecho · Cuentas claras: asistente por chat que cotiza, agenda y cobra con CoDi (API de pey) para cualquier negocio.",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

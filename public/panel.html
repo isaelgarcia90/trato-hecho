@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Panel del negocio · Chamba</title>
+  <title>Panel del negocio · Trato Hecho</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <main class="panel">
     <header>
-      <h1 id="biz">Panel del negocio</h1>
+      <h1 id="biz">Trato Hecho · Panel</h1>
+      <select id="filter" aria-label="Negocio"><option value="">Todos los negocios</option></select>
       <span id="mode" class="badge"></span>
     </header>
     <section class="stats">
-      <div class="stat"><b id="s-citas">0</b><span>Citas confirmadas</span></div>
+      <div class="stat"><b id="s-citas">0</b><span>Tratos cerrados</span></div>
       <div class="stat"><b id="s-cobrado">$0</b><span>Cobrado con CoDi</span></div>
       <div class="stat"><b id="s-pend">$0</b><span>Por cobrar</span></div>
       <div class="stat"><b>$0</b><span>Comisiones pagadas</span></div>
@@ -25,10 +26,12 @@ const jobs = new Map();
 const $jobs = document.getElementById('jobs');
 const money = n => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const STATUS = {
-  cotizando: 'Cotizando', esperando_anticipo: 'Esperando anticipo', confirmada: 'Confirmada',
-  esperando_restante: 'Esperando pago final', pagada: 'Pagada',
+  cotizando: 'Cotizando', esperando_anticipo: 'Esperando anticipo', esperando_pago: 'Esperando pago',
+  confirmada: 'Confirmada', esperando_restante: 'Esperando pago final', pagada: 'Pagada',
 };
-const SERVICES = {};
+const KIND = { anticipo: 'Anticipo', pago: 'Pago', restante: 'Restante' };
+const $filter = document.getElementById('filter');
+const visible = j => !$filter.value || j.businessId === $filter.value;
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
@@ -37,15 +40,18 @@ function card(j) {
   el.className = 'job';
   el.id = 'job-' + j.id;
   const charges = (j.charges || []).map(c => `
-    <li><span>${c.kind === 'anticipo' ? 'Anticipo' : 'Restante'} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · simulado' : ''}</span>
+    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · simulado' : ''}</span>
       <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} ${esc(c.status)}
       ${c.simulated && c.status === 'pendiente' ? `<button data-sim="${c.id}">Simular pago</button>` : ''}</span></li>`).join('');
   const extras = (j.extras || []).map(x => `<li><span>Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
-  const canCharge = j.quote && j.totals.pending > 0 && j.status !== 'cotizando' && j.status !== 'esperando_anticipo';
+  const canCharge = j.quote && j.totals.pending > 0 && !['cotizando', 'esperando_anticipo', 'esperando_pago'].includes(j.status);
+  const line = j.quote?.items?.[0];
+  const title = line ? (line.quantity > 1 ? line.quantity + ' × ' : '') + line.concept : 'Nueva conversación';
   el.innerHTML = `
-    <h3>${esc(j.quote?.items?.[0]?.concept || 'Nueva conversación')} <span class="badge ${j.status}">${STATUS[j.status] || j.status}</span></h3>
+    <div class="biz-tag">${esc(j.business?.name)}</div>
+    <h3>${esc(title)} <span class="badge ${j.status}">${STATUS[j.status] || j.status}</span></h3>
     <div class="meta">
-      ${j.slot ? 'Cita: ' + esc(j.slot) + '<br>' : ''}
+      ${j.slot ? esc(j.business?.scheduleLabel || 'Cita') + ': ' + esc(j.slot) + '<br>' : ''}
       ${j.phone ? 'Celular: ' + esc(j.phone) + '<br>' : ''}
       ${j.description ? 'Detalle: “' + esc(j.description) + '”' : ''}
     </div>
@@ -93,16 +99,19 @@ async function action(id, kind, body, errEl) {
 function upsert(j, flash) {
   if (!j || j.messages?.length <= 1) return;
   jobs.set(j.id, j);
-  const fresh = card(j);
   const old = document.getElementById('job-' + j.id);
+  if (!visible(j)) { old?.remove(); stats(); return; }
+  const fresh = card(j);
   if (old) old.replaceWith(fresh); else $jobs.prepend(fresh);
   if (flash) { fresh.classList.add('flash'); setTimeout(() => fresh.classList.remove('flash'), 2500); }
   stats();
 }
 
 function stats() {
-  let citas = 0, cobrado = 0, pend = 0;
+  let citas = 0, cobrado = 0, pend = 0, shown = 0;
   for (const j of jobs.values()) {
+    if (!visible(j)) continue;
+    shown++;
     if (['confirmada', 'esperando_restante', 'pagada'].includes(j.status)) citas++;
     cobrado += j.totals?.paid || 0;
     if (j.status !== 'cotizando') pend += j.totals?.pending || 0;
@@ -110,13 +119,21 @@ function stats() {
   document.getElementById('s-citas').textContent = citas;
   document.getElementById('s-cobrado').textContent = money(cobrado);
   document.getElementById('s-pend').textContent = money(pend);
-  if (!jobs.size) $jobs.innerHTML = '<div class="empty">Aún no hay conversaciones. Abre <a href="/chat?nuevo">el chat</a> como cliente.</div>';
-  else $jobs.querySelector('.empty')?.remove();
+  if (!shown) {
+    if (!$jobs.querySelector('.empty')) $jobs.innerHTML = '<div class="empty">Aún no hay conversaciones. Abre <a href="/">un chat de ejemplo</a> como cliente.</div>';
+  } else $jobs.querySelector('.empty')?.remove();
 }
+
+$filter.onchange = () => {
+  $jobs.innerHTML = '';
+  [...jobs.values()].sort((a, b) => a.createdAt - b.createdAt).forEach(j => upsert(j));
+  stats();
+};
 
 async function start() {
   const s = await (await fetch('/api/status')).json();
-  document.getElementById('biz').textContent = s.business.name + ' · Panel';
+  document.getElementById('biz').textContent = s.brand.name + ' · Panel';
+  for (const b of s.businesses) $filter.add(new Option(b.name, b.id));
   const mode = document.getElementById('mode');
   mode.textContent = s.mode === 'simulado' ? 'Modo simulado' : 'pey producción';
   mode.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');

@@ -1,8 +1,11 @@
 # Contexto del proyecto (para Claude Code)
 
 ## Qué es
-Chamba: agente por chat para oficios (ejemplo: Plomería Don Beto) que cotiza con precios fijos del catálogo,
-agenda la cita y cobra el anticipo con CoDi usando el API de pey. Panel del negocio en vivo (SSE).
+Trato Hecho · Cuentas claras (antes "Chamba"): asistente por chat para cualquier negocio (oficios, emprendedores,
+freelancers, negocios informales). El agente por defecto se llama Clarito. Cotiza con precios fijos del catálogo,
+agenda si el negocio lo pide y cobra con CoDi usando el API de pey. Panel del negocio en vivo (SSE).
+Negocios configurables en `config/businesses.json` (demo: Plomería Don Beto con cita y anticipo 50%,
+Postres de Sofi con cantidad y entrega, Tamales Doña Mary con venta directa).
 Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 
 ## Fechas y reglas que importan
@@ -31,14 +34,17 @@ Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 ## Arquitectura
 - `src/server.js` Express: rutas del chat, panel, SSE, webhook (cuerpo crudo + verificación de firma),
   simulador de pago solo en modo mock.
-- `src/agent.js` flujo: servicio → descripción → horario → celular → cotización → cobro (push o QR).
+- `config/businesses.json` + `src/catalog.js`: marca, negocios, catálogo, pasos (`details`, `quantity`,
+  `schedule`: cita|entrega|null) y `depositPercent` (< 100 = anticipo; 100 = pago completo).
+- `src/agent.js` flujo según los pasos del negocio: producto/servicio → cantidad → detalles → horario →
+  celular → cotización → cobro (push o QR).
   LLM opcional (API compatible con OpenAI, por defecto Gemini) solo para extraer datos; precios y cobros
   los decide el servidor.
 - `src/payments.js` crea cobros, relaciona eventos (transactionId / codiQrId / metadata.chargeId / numRef),
   idempotencia por webhook-id.
 - `src/pey.js` cliente HTTP; sin PEY_API_KEY → modo simulado.
 - `src/store.js` JSON en `data/db.json` (en Render free el disco es efímero: aceptable para la demo).
-- `public/` chat.html (estilo WhatsApp), panel.html, index.html.
+- `public/` chat.html (estilo WhatsApp, `?n=<negocio>`), panel.html (filtro por negocio), index.html.
 
 ## Estado
 - Probado: flujo completo en modo simulado; modo producción contra un pey falso (forma del body correcta);

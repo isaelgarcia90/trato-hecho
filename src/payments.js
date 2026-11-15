@@ -1,6 +1,6 @@
 import QRCode from 'qrcode';
 import { config } from './config.js';
-import { business } from './catalog.js';
+import { defaultBusiness, getBusiness, scheduleLabel } from './catalog.js';
 import * as pey from './pey.js';
 import {
   addMessage, chargesForJob, createCharge, findChargeForEvent, getJob,
@@ -10,6 +10,8 @@ import { publish } from './events.js';
 
 const money = n => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export { money };
+
+export const businessFor = job => getBusiness(job?.businessId) || defaultBusiness;
 
 export function jobTotals(job) {
   const extras = (job.extras || []).reduce((s, e) => s + e.amount, 0);
@@ -33,16 +35,26 @@ export function notifyJob(jobId) {
 
 export function publicJob(job) {
   if (!job) return null;
-  return { ...job, charges: chargesForJob(job.id), totals: jobTotals(job) };
+  const b = businessFor(job);
+  return {
+    ...job,
+    business: { id: b.id, name: b.name, scheduleLabel: scheduleLabel(b) },
+    charges: chargesForJob(job.id),
+    totals: jobTotals(job),
+  };
 }
+
+/** Primer cobro: anticipo si el negocio pide un porcentaje, o el pago completo. */
+export const firstChargeKind = job => (job.quote.deposit < job.quote.total ? 'anticipo' : 'pago');
 
 /**
  * Crea un cobro CoDi para un trabajo.
- * kind: 'anticipo' | 'restante'; method: 'push' (notificación al celular) | 'qr'
+ * kind: 'anticipo' | 'pago' | 'restante'; method: 'push' (notificación al celular) | 'qr'
  */
 export async function chargeJob(job, kind, method) {
+  const business = businessFor(job);
   const totals = jobTotals(job);
-  const quotedAmount = kind === 'anticipo' ? job.quote.deposit : totals.pending;
+  const quotedAmount = kind === 'restante' ? totals.pending : job.quote.deposit;
   if (!(quotedAmount > 0)) throw new Error('No hay monto pendiente por cobrar.');
 
   if (method === 'push') {
@@ -65,7 +77,7 @@ export async function chargeJob(job, kind, method) {
     jobId: job.id, kind, method, quotedAmount, chargedAmount, numRef, concept,
     simulated: config.peyMock,
   });
-  const metadata = { chargeId: charge.id, jobId: job.id, kind };
+  const metadata = { chargeId: charge.id, jobId: job.id, businessId: business.id, kind };
 
   try {
     if (method === 'push') {
@@ -84,11 +96,27 @@ export async function chargeJob(job, kind, method) {
     throw err;
   }
 
-  if (job.status === 'cotizando' || kind === 'restante') {
-    updateJob(job.id, { status: kind === 'anticipo' ? 'esperando_anticipo' : 'esperando_restante' });
+  if (kind === 'restante') updateJob(job.id, { status: 'esperando_restante' });
+  else if (job.status === 'cotizando') {
+    updateJob(job.id, { status: kind === 'anticipo' ? 'esperando_anticipo' : 'esperando_pago' });
   }
   notifyJob(job.id);
   return chargesForJob(job.id).find(c => c.id === charge.id);
+}
+
+function paidMessage(job, charge, pending) {
+  const b = businessFor(job);
+  const label = scheduleLabel(b);
+  const amount = money(charge.quotedAmount);
+  if (charge.kind === 'restante') return `Recibimos tu pago de ${amount}. ¡Gracias por tu preferencia!`;
+  if (charge.kind === 'anticipo') {
+    return `Recibimos tu anticipo de ${amount}. ` +
+      (label === 'Cita' ? `Tu cita quedó confirmada para el ${job.slot}. ` : label ? `Tu pedido quedó confirmado para el ${job.slot}. ` : '') +
+      `Restan ${money(pending)}, que se pagan al terminar.`;
+  }
+  if (label === 'Cita') return `Recibimos tu pago de ${amount}. Tu cita quedó confirmada para el ${job.slot}. ¡Trato hecho!`;
+  if (label) return `Recibimos tu pago de ${amount}. Tu pedido quedó confirmado para entrega el ${job.slot}. ¡Trato hecho!`;
+  return `Recibimos tu pago de ${amount}. ${b.owner} ya está preparando tu pedido. ¡Trato hecho!`;
 }
 
 /** Procesa un evento de pago de pey (ya verificado). Idempotente. */
@@ -110,15 +138,8 @@ export function handlePaymentEvent(evt, eventKey) {
 
   const job = getJob(charge.jobId);
   const { pending } = jobTotals(job);
-  if (charge.kind === 'anticipo') {
-    updateJob(job.id, { status: 'confirmada' });
-    say(job.id, 'agente',
-      `Recibimos tu anticipo de ${money(charge.quotedAmount)}. Tu cita quedó confirmada para el ${job.slot}. ` +
-      `Restan ${money(pending)}, que se pagan al terminar el trabajo.`, { kind: 'paid' });
-  } else {
-    updateJob(job.id, { status: pending > 0 ? 'confirmada' : 'pagada' });
-    say(job.id, 'agente', `Recibimos tu pago de ${money(charge.quotedAmount)}. ¡Gracias por tu preferencia!`, { kind: 'paid' });
-  }
+  updateJob(job.id, { status: pending > 0 ? 'confirmada' : 'pagada' });
+  say(job.id, 'agente', paidMessage(job, charge, pending), { kind: 'paid' });
   notifyJob(job.id);
   return { ok: true, chargeId: charge.id };
 }
