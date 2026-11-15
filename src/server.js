@@ -142,7 +142,7 @@ app.post('/api/panel/jobs/:id/charge', panelAuth, async (req, res) => {
     say(job.id, 'agente', method === 'push'
       ? `Te mandé el cobro de lo que resta, ${money(charge.quotedAmount)}, a tu app del banco.`
       : `Escanea este QR para pagar lo que resta, ${money(charge.quotedAmount)}:`,
-    { kind: 'charge', chargeId: charge.id, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
+    { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
     res.json(publicJob(getJob(job.id)));
   } catch (err) {
     res.status(400).json({ error: err.message });

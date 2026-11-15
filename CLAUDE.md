@@ -4,8 +4,9 @@
 Trato Hecho · Cuentas claras (antes "Chamba"): asistente por chat para cualquier negocio (oficios, emprendedores,
 freelancers, negocios informales). El agente por defecto se llama Clarito. Cotiza con precios fijos del catálogo,
 agenda si el negocio lo pide y cobra con CoDi usando el API de pey. Panel del negocio en vivo (SSE).
-Negocios configurables en `config/businesses.json` (demo: Plomería Don Beto con cita y anticipo 50%,
-Postres de Sofi con cantidad y entrega, Tamales Doña Mary con venta directa).
+Negocios configurables en `config/businesses.json`, un ejemplo por perfil: oficio (Plomería Don Beto),
+formal (Consultorio Dental Sonríe), freelance (Ana Ruiz · Diseño), emprendedor (Clases de inglés con Diego),
+jóvenes y niños (Postres de Sofi, Pulseras de Mateo) y tercera edad (Tamales Doña Mary).
 Proyecto para el Cursor Hackatón México 2026, sede CDMX.
 
 ## Fechas y reglas que importan

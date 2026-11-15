@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildQuote, businesses, findItem, getBusiness, itemById, scheduleLabel } from '../src/catalog.js';
+import {
+  availableSlots, buildQuote, businesses, findItem, getBusiness, itemById, profiles, scheduleLabel,
+} from '../src/catalog.js';
 
 const plomeria = getBusiness('plomeria');
 const postres = getBusiness('postres');
@@ -9,6 +11,17 @@ const tamales = getBusiness('tamales');
 test('carga los negocios de ejemplo con Clarito como agente por defecto', () => {
   assert.ok(businesses.length >= 3);
   for (const b of businesses) assert.equal(b.agentName, 'Clarito');
+});
+
+test('hay un ejemplo para cada perfil', () => {
+  for (const p of Object.keys(profiles)) assert.ok(businesses.some(b => b.profile === p), `falta perfil ${p}`);
+});
+
+test('horarios configurables por negocio', () => {
+  const now = new Date('2026-11-15T12:00:00-06:00');
+  assert.deepEqual(availableSlots(getBusiness('diseno'), now), ['miércoles, 18 de noviembre', 'viernes, 20 de noviembre', 'domingo, 22 de noviembre']);
+  assert.equal(availableSlots(plomeria, now)[0], 'lunes, 16 de noviembre, 9:00');
+  assert.equal(findItem(getBusiness('pulseras'), 'una pulsera con nombre')?.id, 'nombre');
 });
 
 test('identifica el producto o servicio desde texto libre, por negocio', () => {

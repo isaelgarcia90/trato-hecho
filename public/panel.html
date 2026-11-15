@@ -4,33 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel del negocio · Trato Hecho</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <main class="panel">
-    <header>
-      <h1 id="biz">Trato Hecho · Panel</h1>
+    <header class="panel-top">
+      <a class="logo" href="/"><span class="mark">🤝</span><span>Trato Hecho <small>· Panel</small></span></a>
+      <span class="spacer"></span>
       <select id="filter" aria-label="Negocio"><option value="">Todos los negocios</option></select>
+      <a class="link" href="/#negocios">Abrir un chat ›</a>
       <span id="mode" class="badge"></span>
     </header>
     <section class="stats">
-      <div class="stat"><b id="s-citas">0</b><span>Tratos cerrados</span></div>
-      <div class="stat"><b id="s-cobrado">$0</b><span>Cobrado con CoDi</span></div>
-      <div class="stat"><b id="s-pend">$0</b><span>Por cobrar</span></div>
-      <div class="stat"><b>$0</b><span>Comisiones pagadas</span></div>
+      <div class="stat"><span class="ic">🤝</span><b id="s-citas">0</b><span>Tratos cerrados</span></div>
+      <div class="stat"><span class="ic">💰</span><b id="s-cobrado">$0</b><span>Cobrado con CoDi</span></div>
+      <div class="stat"><span class="ic">⏳</span><b id="s-pend">$0</b><span>Por cobrar</span></div>
+      <div class="stat good"><span class="ic">✨</span><b id="s-ahorro">$0</b><span>Ahorro vs. tarjeta (~3%). Comisiones pagadas: $0</span></div>
     </section>
     <section id="jobs" class="jobs"></section>
   </main>
 <script>
 const jobs = new Map();
 const $jobs = document.getElementById('jobs');
+const $filter = document.getElementById('filter');
 const money = n => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const STATUS = {
   cotizando: 'Cotizando', esperando_anticipo: 'Esperando anticipo', esperando_pago: 'Esperando pago',
   confirmada: 'Confirmada', esperando_restante: 'Esperando pago final', pagada: 'Pagada',
 };
 const KIND = { anticipo: 'Anticipo', pago: 'Pago', restante: 'Restante' };
-const $filter = document.getElementById('filter');
+const CARD_FEE = 0.03; // referencia aproximada de comisión con terminal de tarjeta
 const visible = j => !$filter.value || j.businessId === $filter.value;
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -39,28 +45,35 @@ function card(j) {
   const el = document.createElement('article');
   el.className = 'job';
   el.id = 'job-' + j.id;
+  el.style.setProperty('--c', j.business?.color || '#0f766e');
   const charges = (j.charges || []).map(c => `
-    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · simulado' : ''}</span>
-      <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} ${esc(c.status)}
+    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? '📲 app del banco' : '📷 QR'}${c.simulated ? ' · simulado' : ''}</span>
+      <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} · ${esc(c.status)}
       ${c.simulated && c.status === 'pendiente' ? `<button data-sim="${c.id}">Simular pago</button>` : ''}</span></li>`).join('');
-  const extras = (j.extras || []).map(x => `<li><span>Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
+  const extras = (j.extras || []).map(x => `<li><span>➕ Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
   const canCharge = j.quote && j.totals.pending > 0 && !['cotizando', 'esperando_anticipo', 'esperando_pago'].includes(j.status);
   const line = j.quote?.items?.[0];
-  const title = line ? (line.quantity > 1 ? line.quantity + ' × ' : '') + line.concept : 'Nueva conversación';
+  const title = line ? (line.quantity > 1 ? line.quantity + ' × ' : '') + line.concept : 'Conversación en curso';
+  const pct = j.totals.total > 0 ? Math.min(100, Math.round((j.totals.paid / j.totals.total) * 100)) : 0;
   el.innerHTML = `
-    <div class="biz-tag">${esc(j.business?.name)}</div>
-    <h3>${esc(title)} <span class="badge ${j.status}">${STATUS[j.status] || j.status}</span></h3>
-    <div class="meta">
-      ${j.slot ? esc(j.business?.scheduleLabel || 'Cita') + ': ' + esc(j.slot) + '<br>' : ''}
-      ${j.phone ? 'Celular: ' + esc(j.phone) + '<br>' : ''}
-      ${j.description ? 'Detalle: “' + esc(j.description) + '”' : ''}
+    <div class="jh">
+      <span class="emoji">${esc(j.business?.emoji || '🤝')}</span>
+      <div class="t"><small>${esc(j.business?.name)}</small><b>${esc(title)}</b></div>
+      <span class="badge ${j.status}">${STATUS[j.status] || esc(j.status)}</span>
     </div>
-    ${j.quote ? `<div class="money"><span>Total <b>${money(j.totals.total)}</b></span><span class="ok">Pagado ${money(j.totals.paid)}</span><span class="warn">Pendiente ${money(j.totals.pending)}</span></div>` : ''}
-    <ul>${extras}${charges}</ul>
+    <div class="meta">
+      ${j.slot ? (j.business?.scheduleLabel === 'Entrega' ? '📦 ' : '📅 ') + esc(j.business?.scheduleLabel || 'Cita') + ': ' + esc(j.slot) + '<br>' : ''}
+      ${j.phone ? '📱 ' + esc(j.phone) + '<br>' : ''}
+      ${j.description ? '💬 “' + esc(j.description) + '”' : ''}
+    </div>
     ${j.quote ? `
+    <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+    <div class="money"><span>Total <b>${money(j.totals.total)}</b></span><span class="ok">Pagado ${money(j.totals.paid)}</span><span class="warn">Pendiente ${money(j.totals.pending)}</span></div>` : ''}
+    ${extras || charges ? `<ul>${extras}${charges}</ul>` : ''}
+    ${j.quote && j.status !== 'pagada' ? `
     <div class="row">
-      <input data-concept placeholder="Cargo extra (ej. refacción)">
-      <input data-amount type="number" min="1" step="1" placeholder="$" style="max-width:90px">
+      <input data-concept placeholder="Cargo extra (ej. refacción)" aria-label="Concepto del cargo extra">
+      <input data-amount type="number" min="1" step="1" placeholder="$" style="max-width:90px" aria-label="Monto">
       <button data-extra>Agregar</button>
     </div>` : ''}
     ${canCharge ? `<div class="row">
@@ -119,8 +132,13 @@ function stats() {
   document.getElementById('s-citas').textContent = citas;
   document.getElementById('s-cobrado').textContent = money(cobrado);
   document.getElementById('s-pend').textContent = money(pend);
+  document.getElementById('s-ahorro').textContent = money(cobrado * CARD_FEE);
   if (!shown) {
-    if (!$jobs.querySelector('.empty')) $jobs.innerHTML = '<div class="empty">Aún no hay conversaciones. Abre <a href="/">un chat de ejemplo</a> como cliente.</div>';
+    if (!$jobs.querySelector('.empty')) {
+      $jobs.innerHTML = `<div class="empty"><div class="big">💬</div><h3>Aún no hay conversaciones</h3>
+        <div>Abre un chat como si fueras cliente; aquí verás cada trato y cada pago en vivo.</div>
+        <div class="cta"><a class="btn" href="/#negocios">Abrir un chat de ejemplo</a></div></div>`;
+    }
   } else $jobs.querySelector('.empty')?.remove();
 }
 
@@ -132,8 +150,7 @@ $filter.onchange = () => {
 
 async function start() {
   const s = await (await fetch('/api/status')).json();
-  document.getElementById('biz').textContent = s.brand.name + ' · Panel';
-  for (const b of s.businesses) $filter.add(new Option(b.name, b.id));
+  for (const b of s.businesses) $filter.add(new Option(`${b.emoji} ${b.name}`, b.id));
   const mode = document.getElementById('mode');
   mode.textContent = s.mode === 'simulado' ? 'Modo simulado' : 'pey producción';
   mode.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');

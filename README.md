@@ -21,14 +21,20 @@ Proyecto para el **Cursor Hackatón México 2026** (CDMX).
 Cada negocio se configura en [`config/businesses.json`](config/businesses.json): nombre, catálogo con precios fijos,
 pasos del flujo, porcentaje de anticipo y nombre del agente (por defecto, Clarito). El demo trae tres:
 
-| Negocio de ejemplo | Flujo | Cobro |
-|---|---|---|
-| Plomería Don Beto | Servicio → detalles → **cita** → celular → cotización | Anticipo del 50% y el resto al terminar (con extras desde el panel) |
-| Postres de Sofi | Producto → **cantidad** → **fecha de entrega** → celular → cotización | Pago completo |
-| Tamales Doña Mary | Producto → **cantidad** → celular → cotización | Pago completo, venta directa |
+| Perfil | Negocio de ejemplo | Flujo | Cobro |
+|---|---|---|---|
+| Oficios | Plomería Don Beto | Servicio → detalles → **cita** → celular | Anticipo del 50% y el resto al terminar (con extras desde el panel) |
+| Negocio formal | Consultorio Dental Sonríe | Tratamiento → **cita** → celular | Anticipo del 30% |
+| Freelancers | Ana Ruiz · Diseño | Paquete → detalles → **fecha de entrega** → celular | Anticipo del 50% |
+| Emprendedores | Clases de inglés con Diego | Clase o paquete → **cita** → celular | Pago completo |
+| Jóvenes y niños | Postres de Sofi (16 años) | Producto → **cantidad** → **fecha de entrega** → celular | Pago completo |
+| Jóvenes y niños | Pulseras de Mateo (12 años) | Producto → **cantidad** → celular | Pago completo; cobra a la cuenta de su mamá |
+| Tercera edad | Tamales Doña Mary | Producto → **cantidad** → celular | Pago completo, venta directa |
 
 Pasos configurables por negocio (`steps`): `details` (pedir detalles), `quantity` (pedir cantidad) y
 `schedule` (`"cita"`, `"entrega"` o `null`). Con `depositPercent` menor a 100 se cobra un anticipo.
+Opcionales: `slots` (días y horas a ofrecer), `scheduleQuestion`, `detailsPrompt`, `agentName`, `emoji`, `color`,
+`about` y `profile`.
 
 ## Qué hace
 
@@ -65,7 +71,8 @@ npm start                # http://localhost:3000
 ```
 
 - `/`: inicio con los negocios de ejemplo.
-- `/chat?n=plomeria` (o `postres`, `tamales`): el chat del cliente. Agrega `&nuevo` para empezar otra conversación.
+- `/chat?n=plomeria` (o `dental`, `diseno`, `ingles`, `postres`, `pulseras`, `tamales`): el chat del cliente.
+  Agrega `&nuevo` para empezar otra conversación.
 - `/panel`: el negocio.
 - En **modo simulado** aparece un botón "Simular que pagué". Ese modo sirve solo para desarrollo:
   la entrega usa pey en producción.

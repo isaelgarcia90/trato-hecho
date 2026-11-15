@@ -1,10 +1,22 @@
 {
   "brand": { "name": "Trato Hecho", "tagline": "Cuentas claras", "defaultAgentName": "Clarito" },
+  "profiles": {
+    "oficio": "Oficios",
+    "formal": "Negocio formal",
+    "freelance": "Freelancers",
+    "emprendedor": "Emprendedores",
+    "joven": "Jóvenes y niños",
+    "mayor": "Tercera edad"
+  },
   "businesses": [
     {
       "id": "plomeria",
       "name": "Plomería Don Beto",
       "owner": "Don Beto",
+      "profile": "oficio",
+      "emoji": "🔧",
+      "color": "#2563eb",
+      "about": "Plomero independiente con 20 años de oficio.",
       "giro": "plomería",
       "zone": "CDMX",
       "greeting": "Te ayudo a cotizar y agendar. ¿Qué problema tienes en casa?",
@@ -25,13 +37,91 @@
       ]
     },
     {
+      "id": "dental",
+      "name": "Consultorio Dental Sonríe",
+      "owner": "Dra. Paty",
+      "profile": "formal",
+      "emoji": "🦷",
+      "color": "#0891b2",
+      "about": "Consultorio con RFC y factura; el anticipo evita citas perdidas.",
+      "giro": "odontología",
+      "zone": "CDMX",
+      "greeting": "Te ayudo a agendar tu cita. ¿Qué tratamiento buscas?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "depositPercent": 30,
+      "items": [
+        { "id": "valoracion", "name": "Consulta de valoración", "price": 400,
+          "keywords": ["valoración", "valoracion", "consulta", "revisión", "revision", "duele", "dolor", "muela"] },
+        { "id": "limpieza", "name": "Limpieza dental", "price": 700,
+          "keywords": ["limpieza", "sarro", "profilaxis"] },
+        { "id": "resina", "name": "Resina (por pieza)", "price": 900,
+          "keywords": ["resina", "caries", "empaste", "picado"] },
+        { "id": "blanqueamiento", "name": "Blanqueamiento", "price": 2500,
+          "keywords": ["blanque", "blanco", "manchas"] }
+      ]
+    },
+    {
+      "id": "diseno",
+      "name": "Ana Ruiz · Diseño",
+      "owner": "Ana",
+      "profile": "freelance",
+      "emoji": "🎨",
+      "color": "#c026d3",
+      "about": "Diseñadora freelance: anticipo al empezar y el resto al entregar.",
+      "giro": "diseño gráfico freelance",
+      "zone": "remoto",
+      "greeting": "¿Qué necesitas para tu marca?",
+      "steps": { "details": true, "quantity": false, "schedule": "entrega" },
+      "detailsPrompt": "Cuéntame de tu negocio: ¿cómo se llama y qué estilo te gusta?",
+      "scheduleQuestion": "¿Para cuándo lo necesitas?",
+      "slots": [{ "day": 3 }, { "day": 5 }, { "day": 7 }],
+      "depositPercent": 50,
+      "items": [
+        { "id": "logo", "name": "Logo con 2 propuestas", "price": 1500,
+          "keywords": ["logo", "logotipo", "marca", "imagen"] },
+        { "id": "redes", "name": "Kit para redes (10 diseños)", "price": 1200,
+          "keywords": ["redes", "instagram", "facebook", "post", "publicacion", "publicación"] },
+        { "id": "menu", "name": "Menú o catálogo (hasta 4 páginas)", "price": 900,
+          "keywords": ["menú", "menu", "catálogo", "catalogo", "carta", "folleto"] }
+      ]
+    },
+    {
+      "id": "ingles",
+      "name": "Clases de inglés con Diego",
+      "owner": "Diego",
+      "profile": "emprendedor",
+      "emoji": "📚",
+      "color": "#ea580c",
+      "about": "Emprendimiento de clases en línea; cobra al reservar.",
+      "giro": "clases de inglés en línea",
+      "zone": "en línea",
+      "greeting": "¿Qué tipo de clase te interesa?",
+      "steps": { "details": false, "quantity": false, "schedule": "cita" },
+      "scheduleQuestion": "¿Cuándo quieres tu primera clase?",
+      "slots": [{ "day": 1, "time": "18:00" }, { "day": 1, "time": "19:00" }, { "day": 2, "time": "18:00" }],
+      "depositPercent": 100,
+      "items": [
+        { "id": "suelta", "name": "Clase suelta (1 hora)", "price": 250,
+          "keywords": ["suelta", "una clase", "prueba", "probar"] },
+        { "id": "paquete", "name": "Paquete de 4 clases", "price": 900,
+          "keywords": ["paquete", "4 clases", "cuatro", "mes"] },
+        { "id": "conversacion", "name": "Club de conversación (1 hora)", "price": 150,
+          "keywords": ["conversación", "conversacion", "platicar", "hablar"] }
+      ]
+    },
+    {
       "id": "postres",
       "name": "Postres de Sofi",
       "owner": "Sofi",
+      "profile": "joven",
+      "emoji": "🍰",
+      "color": "#db2777",
+      "about": "Sofi, 16 años, hornea en casa por encargo.",
       "giro": "postres por encargo",
       "zone": "CDMX",
       "greeting": "¿Qué se te antoja encargar?",
       "steps": { "details": false, "quantity": true, "schedule": "entrega" },
+      "scheduleQuestion": "¿Cuándo te lo entregamos?",
       "depositPercent": 100,
       "items": [
         { "id": "pastel", "name": "Pastel de chocolate (10 personas)", "price": 380,
@@ -45,9 +135,32 @@
       ]
     },
     {
+      "id": "pulseras",
+      "name": "Pulseras de Mateo",
+      "owner": "Mateo",
+      "profile": "joven",
+      "emoji": "🧶",
+      "color": "#16a34a",
+      "about": "Mateo, 12 años. Los cobros llegan a la cuenta CoDi de su mamá.",
+      "giro": "pulseras y llaveros hechos a mano",
+      "zone": "CDMX",
+      "greeting": "¿Qué te gustaría llevar?",
+      "steps": { "details": false, "quantity": true, "schedule": null },
+      "depositPercent": 100,
+      "items": [
+        { "id": "nombre", "name": "Pulsera con nombre", "price": 45, "keywords": ["nombre", "letras", "personalizada"] },
+        { "id": "pulsera", "name": "Pulsera tejida", "price": 30, "keywords": ["pulsera", "tejida", "hilo"] },
+        { "id": "llavero", "name": "Llavero", "price": 40, "keywords": ["llavero", "llave"] }
+      ]
+    },
+    {
       "id": "tamales",
       "name": "Tamales Doña Mary",
       "owner": "Doña Mary",
+      "profile": "mayor",
+      "emoji": "🫔",
+      "color": "#ca8a04",
+      "about": "Doña Mary, 68 años, vende afuera del metro desde hace 30 años.",
       "giro": "tamales y atole",
       "zone": "CDMX",
       "greeting": "¿Qué te sirvo hoy?",

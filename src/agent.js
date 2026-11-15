@@ -112,7 +112,8 @@ export async function handleClientMessage(jobId, { text, action }) {
   if (data.itemId && !job.quote && itemById(b, data.itemId)) {
     patch.itemId = data.itemId;
     // Si el primer mensaje ya describe el problema, lo usamos como descripción.
-    if (b.steps.details && !job.description && text && text.length > 12) patch.description = text;
+    // (Solo con texto libre: con un botón, el texto es la etiqueta del botón.)
+    if (b.steps.details && !action && !job.description && text && text.length > 12) patch.description = text;
   }
   if (b.steps.quantity && !job.quote && data.quantity > 0 && data.quantity < 1000) patch.quantity = Math.floor(data.quantity);
   if (b.steps.details && data.description && !job.description && (job.itemId || patch.itemId)) patch.description = data.description;
@@ -162,7 +163,8 @@ function nextStep(job, b, llmReply) {
     const first = !job.slots;
     const slots = job.slots || availableSlots(b);
     updateJob(job.id, { slots });
-    const question = b.steps.schedule === 'entrega' ? '¿Cuándo te lo entregamos?' : '¿Qué horario te acomoda?';
+    const question = b.scheduleQuestion ||
+      (b.steps.schedule === 'entrega' ? '¿Cuándo te lo entregamos?' : '¿Qué horario te acomoda?');
     const intro = first
       ? `Entendido: ${item.name}${job.quantity > 1 ? ` × ${job.quantity}` : ''}. ${question}`
       : 'Elige uno de estos horarios, por favor:';
@@ -189,7 +191,14 @@ function nextStep(job, b, llmReply) {
     `Tu cotización:\n• ${line.quantity > 1 ? `${line.quantity} × ` : ''}${line.concept}: ${money(line.amount)}` +
     (label ? `\n• ${label}: ${job.slot}` : '') +
     `\n\n${pago} Se paga con CoDi, sin comisión.`,
-    { buttons: payButtons(), kind: 'quote' });
+    {
+      buttons: payButtons(),
+      kind: 'quote',
+      quote: {
+        lines: quote.items, total: quote.total, deposit: quote.deposit, chargeKind: firstChargeKind(job),
+        depositPercent: b.depositPercent, slot: job.slot, slotLabel: label, demoAmount: config.demoChargeAmount,
+      },
+    });
 }
 
 async function pay(job, method) {
@@ -202,11 +211,11 @@ async function pay(job, method) {
       return say(job.id, 'agente',
         `Listo, te mandé un cobro CoDi por ${money(charge.quotedAmount)} al celular ${job.phone}. ` +
         'Ábrelo en la app de tu banco y apruébalo; aquí te confirmo en cuanto llegue.',
-        { kind: 'charge', chargeId: charge.id, simulated: charge.simulated });
+        { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, simulated: charge.simulated });
     }
     return say(job.id, 'agente',
       `Escanea este QR desde la app de tu banco para pagar ${money(charge.quotedAmount)}:`,
-      { kind: 'charge', chargeId: charge.id, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
+      { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
   } catch (err) {
     console.error('[pay]', err.message);
     return say(job.id, 'agente', `No pude generar el cobro: ${err.message}. ¿Intentamos con el otro método?`,

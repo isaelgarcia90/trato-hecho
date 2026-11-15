@@ -38,7 +38,7 @@ export function publicJob(job) {
   const b = businessFor(job);
   return {
     ...job,
-    business: { id: b.id, name: b.name, scheduleLabel: scheduleLabel(b) },
+    business: { id: b.id, name: b.name, emoji: b.emoji, color: b.color, scheduleLabel: scheduleLabel(b) },
     charges: chargesForJob(job.id),
     totals: jobTotals(job),
   };
@@ -139,7 +139,7 @@ export function handlePaymentEvent(evt, eventKey) {
   const job = getJob(charge.jobId);
   const { pending } = jobTotals(job);
   updateJob(job.id, { status: pending > 0 ? 'confirmada' : 'pagada' });
-  say(job.id, 'agente', paidMessage(job, charge, pending), { kind: 'paid' });
+  say(job.id, 'agente', paidMessage(job, charge, pending), { kind: 'paid', chargeId: charge.id, amount: charge.quotedAmount });
   notifyJob(job.id);
   return { ok: true, chargeId: charge.id };
 }
