@@ -94,10 +94,11 @@ export async function chargeJob(job, kind, method) {
 /** Procesa un evento de pago de pey (ya verificado). Idempotente. */
 export function handlePaymentEvent(evt, eventKey) {
   const key = eventKey || evt.transactionId;
-  if (key && !markEventProcessed(key)) return { duplicate: true };
-
+  // Solo se marca como procesado si encontramos el cobro; así un reintento de pey
+  // todavía puede aplicarse si el evento llegó antes de guardar los IDs del cobro.
   const charge = findChargeForEvent(evt);
   if (!charge) return { unmatched: true };
+  if (key && !markEventProcessed(key)) return { duplicate: true };
   if (charge.status === 'pagado') return { alreadyPaid: true, chargeId: charge.id };
 
   updateCharge(charge.id, {

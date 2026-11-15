@@ -91,11 +91,14 @@ export function updateCharge(id, patch) {
 
 export function findChargeForEvent(evt) {
   const all = Object.values(db.charges);
+  // pey puede regresar la metadata plana o anidada en externalMetadata.
+  const chargeId = evt.metadata?.chargeId || evt.metadata?.externalMetadata?.chargeId;
+  const numRef = evt.numRef != null ? String(evt.numRef) : null;
   return (
     (evt.transactionId && all.find(c => c.peyTransactionId === evt.transactionId)) ||
     (evt.codiQrId && all.find(c => c.peyId === evt.codiQrId)) ||
-    (evt.metadata?.externalMetadata?.chargeId && db.charges[evt.metadata.externalMetadata.chargeId]) ||
-    (evt.numRef && all.find(c => c.numRef === evt.numRef && c.status === 'pendiente')) ||
+    (chargeId && db.charges[chargeId]) ||
+    (numRef && all.find(c => String(c.numRef) === numRef && c.status === 'pendiente')) ||
     null
   );
 }
