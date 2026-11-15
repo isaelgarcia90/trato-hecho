@@ -34,23 +34,25 @@ Proyecto para el **Cursor Hackatón México 2026** (sede CDMX).
 - **Pago con CoDi** por notificación a la app del banco o por QR. El webhook de pey se verifica con firma
   (Standard Webhooks) y cada pago se procesa una sola vez.
 
-## Estado de pey: integración lista, demo en modo de prueba
+## Estado de pey: cobro real automático
 
-La demo corre con `PEY_MOCK=1`: los cobros no llegan a un banco y "Simular que pagué" hace de webhook.
+La demo **siempre intenta el cobro real** con pey ($0.01). Si pey lo rechaza, ese cobro queda **de prueba**:
+el chat lo dice y muestra "Simular que pagué". El día que pey active la cuenta, los cobros pasan a ser reales
+solos, sin tocar nada.
 
 - **Ya configurado en producción:** API key, webhook `/webhooks/pey` con su secreto y cuenta CoDi (CLABE).
-- **Al probar con dinero real**, pey aceptó la llave pero respondió `400: API key does not have CoDi enabled`:
-  la cuenta se dio de alta el 15 de noviembre de 2026 y sigue **pendiente** (hasta 5 días hábiles). No alcanzó
-  el tiempo para usar una CLABE pre-autorizada del evento.
-- **Verificado en producción:** el webhook rechaza avisos sin firma o con firma falsa y el simulador se bloquea.
-- **Siguiente paso:** cuando pey active la cuenta, quitar `PEY_MOCK` y hacer el primer cobro real de $0.01.
+- **Hoy pey responde** `400: API key does not have CoDi enabled`: la cuenta se dio de alta el 15 de noviembre
+  de 2026 y sigue **pendiente** (hasta 5 días hábiles). Por eso verás "Prueba · pey pendiente".
+- **Cuidados:** un cobro real solo se confirma con el webhook firmado (no se puede simular). La notificación al
+  celular solo va a números autorizados; para cualquier otro número, el QR sí puede ser un pago real.
+- El panel marca cada cobro como **real** o **prueba**. `PEY_MOCK=1` fuerza todo a prueba.
 
 ## Correr en local
 
 ```bash
 npm install
 npm start      # http://localhost:3000 (sin PEY_API_KEY corre en modo de prueba)
-npm test       # 23 pruebas, incluidas conversaciones completas
+npm test       # 26 pruebas, incluidas conversaciones completas y el modo automático
 ```
 
 Los negocios se editan en [`config/businesses.json`](config/businesses.json). Las calificaciones iniciales del

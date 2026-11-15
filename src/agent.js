@@ -477,11 +477,13 @@ async function pay(job, method) {
     const kind = job.status === 'confirmada' || job.status === 'esperando_restante' ? 'restante' : firstChargeKind(job);
     const charge = await chargeJob(job, kind, method);
     if (method === 'push') {
-      return say(job.id, 'agente', `Te mandé el cobro al ${fmtPhone(job.phone)}. Ábrelo en la app de tu banco y apruébalo.`,
-        { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, simulated: charge.simulated });
+      return say(job.id, 'agente', charge.simulated
+        ? `Listo el cobro de prueba para el ${fmtPhone(job.phone)}.`
+        : `Te mandé el cobro al ${fmtPhone(job.phone)}. Ábrelo en la app de tu banco y apruébalo.`,
+        { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, simulated: charge.simulated, testReason: charge.testReason });
     }
     return say(job.id, 'agente', 'Escanea este QR desde la app de tu banco:',
-      { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
+      { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated, testReason: charge.testReason });
   } catch (err) {
     console.error('[pay]', err.message);
     const friendly = /celular/i.test(err.message) ? err.message : 'No pude generar el cobro en este momento.';

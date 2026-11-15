@@ -57,10 +57,12 @@ Proyecto para el Cursor Hackatón México 2026, sede CDMX.
   PEY_API_KEY, PEY_WEBHOOK_SECRET, ALLOWED_PHONES, DEMO_CHARGE_AMOUNT=0.01, PANEL_PASSWORD y PEY_MOCK=1.
 - pey real (15 nov 2026): la key se acepta, pero /codi/pn y /codi/qr responden
   `400 API key does not have CoDi enabled` porque la cuenta bancaria está en Pending (hasta 5 días hábiles).
-  Webhook configurado y verificado (sin firma → 400). Por eso la demo corre con PEY_MOCK=1.
+  Webhook configurado y verificado (sin firma → 400).
+- Modo automático (sin PEY_MOCK): cada cobro intenta pey real; si pey responde 4xx, ese cobro queda de prueba
+  (charge.testReason = pey|phone|mock) y /api/status.mode = auto-prueba. Simular solo cobros de prueba (real → 403).
 
 ## Pendiente (en orden)
-1. Cuando la cuenta CoDi esté activa: borrar PEY_MOCK en Render y hacer un cobro real de $0.01 (push; si falla, QR).
+1. Borrar PEY_MOCK en Render (modo automático). Cuando pey active la cuenta, hacer un cobro real de $0.01 (push; si falla, QR).
    Revisar logs `[pay]` y `[webhook]`. Obligatorio antes del 12 dic 2026.
 2. Video ≤ 3 min con un cobro CoDi completo.
 3. Migrar a Postgres (Neon/Supabase) y después a Vercel; WhatsApp Business API.

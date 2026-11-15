@@ -5,7 +5,7 @@ import { Webhook } from 'standardwebhooks';
 import { config } from './config.js';
 import { brand, businesses, categories, defaultBusiness, getBusiness, modes, profiles, publicBusiness } from './catalog.js';
 import { greet, handleClientMessage } from './agent.js';
-import { businessFor, chargeJob, handlePaymentEvent, money, notifyJob, publicJob, say } from './payments.js';
+import { businessFor, chargeJob, handlePaymentEvent, money, notifyJob, payMode, publicJob, say } from './payments.js';
 import { createJob, getCharge, getJob, listJobs, newId, ratingsFor, updateJob } from './store.js';
 import { subscribe } from './events.js';
 
@@ -77,7 +77,7 @@ app.get('/api/status', (req, res) => {
     profiles,
     modes,
     businesses: businesses.map(b => publicBusiness(b, ratingsFor(b.id))),
-    mode: config.peyMock ? 'simulado' : 'produccion',
+    mode: payMode(), // simulado | auto-prueba (pey aún no acepta cobros reales) | produccion
     demoChargeAmount: config.demoChargeAmount,
     llm: Boolean(config.llmApiKey),
   });
@@ -165,7 +165,7 @@ app.post('/api/panel/jobs/:id/charge', panelAuth, async (req, res) => {
     say(job.id, 'agente', method === 'push'
       ? `Te mandé el cobro de lo que resta, ${money(charge.quotedAmount)}, a tu app del banco.`
       : `Escanea este QR para pagar lo que resta, ${money(charge.quotedAmount)}:`,
-    { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated });
+    { kind: 'charge', chargeId: charge.id, method, amount: charge.quotedAmount, qrDataUrl: charge.qrDataUrl, simulated: charge.simulated, testReason: charge.testReason });
     res.json(publicJob(getJob(job.id)));
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -174,9 +174,10 @@ app.post('/api/panel/jobs/:id/charge', panelAuth, async (req, res) => {
 
 // ---------- Solo modo simulado: simular que el cliente pagó ----------
 app.post('/api/dev/simulate-payment/:chargeId', (req, res) => {
-  if (!config.peyMock) return res.status(403).json({ error: 'Solo disponible en modo simulado' });
   const c = getCharge(req.params.chargeId);
   if (!c) return res.status(404).json({ error: 'not found' });
+  // Un cobro real solo se confirma con el webhook firmado de pey.
+  if (!c.simulated) return res.status(403).json({ error: 'Solo los cobros de prueba se pueden simular' });
   const evt = {
     type: c.method === 'push' ? 'codi.pn.payment_received' : 'codi.qr.payment_received',
     amount: c.chargedAmount, transactionId: c.peyTransactionId || `MOCK-TX-${c.id}`,
@@ -187,5 +188,5 @@ app.post('/api/dev/simulate-payment/:chargeId', (req, res) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`${brand.name} en http://localhost:${config.port}  (pey: ${config.peyMock ? 'SIMULADO' : 'producción'}, LLM: ${config.llmApiKey ? config.llmModel : 'reglas'})`);
+  console.log(`${brand.name} en http://localhost:${config.port}  (pey: ${config.peyMock ? 'SIMULADO' : 'automático (real si pey acepta, si no prueba)'}, LLM: ${config.llmApiKey ? config.llmModel : 'reglas'})`);
 });

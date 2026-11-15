@@ -13,6 +13,7 @@ async function call(pathname, body) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20000),
   });
   const text = await res.text();
   let json;
@@ -38,15 +39,15 @@ function base({ amount, concept, numRef, metadata }) {
   return body;
 }
 
-export async function createQr(args) {
-  if (config.peyMock) {
+export async function createQr(args, { simulated = config.peyMock } = {}) {
+  if (simulated) {
     return { id: `MOCK-${newId()}`, qrString: `SIMULADO|${args.amount}|${args.concept}|${args.numRef}`, qrImage: null };
   }
   return call('/codi/qr', { ...base(args), expiration: 900 });
 }
 
-export async function createPush(args) {
-  if (config.peyMock) {
+export async function createPush(args, { simulated = config.peyMock } = {}) {
+  if (simulated) {
     return { transactionId: `MOCK-${newId()}`, codiId: '00000000000000000000' };
   }
   return call('/codi/pn', { ...base(args), phoneNumber: args.phoneNumber, expiration: 900 });

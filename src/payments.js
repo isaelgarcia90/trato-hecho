@@ -11,6 +11,15 @@ import { publish } from './events.js';
 const money = n => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export { money };
 
+/** Estado del cobro real: 'unknown' hasta el primer intento, luego 'ok' o 'unavailable'. */
+export const peyStatus = { real: 'unknown', lastError: null };
+
+/** Modo que se muestra en la UI: 'simulado' (PEY_MOCK), 'auto-prueba' (pey rechazó) o 'produccion'. */
+export function payMode() {
+  if (config.peyMock) return 'simulado';
+  return peyStatus.real === 'unavailable' ? 'auto-prueba' : 'produccion';
+}
+
 export const businessFor = job => getBusiness(job?.businessId) || defaultBusiness;
 
 export function jobTotals(job) {
@@ -58,11 +67,8 @@ export async function chargeJob(job, kind, method) {
   const quotedAmount = kind === 'restante' ? totals.pending : job.quote.deposit;
   if (!(quotedAmount > 0)) throw new Error('No hay monto pendiente por cobrar.');
 
-  if (method === 'push') {
-    if (!/^\d{10}$/.test(job.phone || '')) throw new Error('Falta un celular de 10 dígitos para mandar el cobro.');
-    if (config.allowedPhones.length && !config.allowedPhones.includes(job.phone)) {
-      throw new Error('Este celular no está habilitado para cobros en la demo.');
-    }
+  if (method === 'push' && !/^\d{10}$/.test(job.phone || '')) {
+    throw new Error('Falta un celular de 10 dígitos para mandar el cobro.');
   }
 
   // No mandar un segundo cobro del mismo tipo mientras haya uno pendiente reciente.
@@ -74,22 +80,43 @@ export async function chargeJob(job, kind, method) {
   const chargedAmount = config.demoChargeAmount ?? quotedAmount;
   const numRef = nextNumRef();
   const concept = `${business.name} ${kind}`;
+  // Modo automático: se intenta el cobro real; si no se puede, ese cobro queda de prueba.
+  let testReason = config.peyMock ? 'mock' : null;
+  if (!testReason && method === 'push' && config.allowedPhones.length && !config.allowedPhones.includes(job.phone)) {
+    testReason = 'phone';
+  }
   const charge = createCharge({
     jobId: job.id, kind, method, quotedAmount, chargedAmount, numRef, concept,
-    simulated: config.peyMock,
+    simulated: Boolean(testReason), testReason,
   });
   const metadata = { chargeId: charge.id, jobId: job.id, businessId: business.id, kind };
+  const args = { amount: chargedAmount, concept, numRef, metadata, phoneNumber: job.phone };
 
-  try {
+  const create = async simulated => {
     if (method === 'push') {
-      const r = await pey.createPush({ amount: chargedAmount, concept, numRef, metadata, phoneNumber: job.phone });
+      const r = await pey.createPush(args, { simulated });
       updateCharge(charge.id, { peyTransactionId: r.transactionId, peyCodiId: r.codiId });
     } else {
-      const r = await pey.createQr({ amount: chargedAmount, concept, numRef, metadata });
+      const r = await pey.createQr(args, { simulated });
       const qrDataUrl = r.qrImage
         ? `data:image/png;base64,${r.qrImage}`
         : await QRCode.toDataURL(r.qrString, { margin: 1, width: 280 });
       updateCharge(charge.id, { peyId: r.id, qrString: r.qrString, qrDataUrl });
+    }
+  };
+
+  try {
+    try {
+      await create(Boolean(testReason));
+      if (!testReason) Object.assign(peyStatus, { real: 'ok', lastError: null });
+    } catch (err) {
+      // Solo un rechazo de pey (4xx, p. ej. "CoDi not enabled") pasa a prueba.
+      // Un 5xx o un error de red se reporta como error: pey pudo haber creado el cobro.
+      if (testReason || !(err.status >= 400 && err.status < 500)) throw err;
+      console.warn('[pay] pey rechazó el cobro real; queda de prueba:', err.message);
+      Object.assign(peyStatus, { real: 'unavailable', lastError: err.message });
+      updateCharge(charge.id, { simulated: true, testReason: 'pey', peyError: err.message });
+      await create(true);
     }
   } catch (err) {
     updateCharge(charge.id, { status: 'error', error: err.message });

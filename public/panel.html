@@ -93,7 +93,7 @@ function card(j) {
   const pct = j.totals.total > 0 ? Math.min(100, Math.round((j.totals.paid / j.totals.total) * 100)) : 0;
   const canCharge = j.quote && j.totals.pending > 0 && ['confirmada', 'esperando_restante'].includes(j.status);
   const charges = (j.charges || []).map(c => `
-    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · prueba' : ''}</span>
+    <li><span>${KIND[c.kind] || esc(c.kind)} · ${c.method === 'push' ? 'app del banco' : 'QR'}${c.simulated ? ' · prueba' : ' · <b>real</b>'}</span>
       <span class="${c.status === 'pagado' ? 'ok' : c.status === 'error' ? 'bad' : 'warn'}">${money(c.quotedAmount)} · ${esc(c.status)}
       ${c.simulated && c.status === 'pendiente' ? `<button class="btn sm" data-sim="${c.id}">Simular pago</button>` : ''}</span></li>`).join('');
   const extras = (j.extras || []).map(x => `<li><span>Extra: ${esc(x.concept)}</span><span>${money(x.amount)}</span></li>`).join('');
@@ -232,8 +232,8 @@ async function start() {
   const s = await (await fetch('/api/status')).json();
   for (const b of s.businesses) $filter.add(new Option(`${b.emoji} ${b.name}`, b.id));
   const mode = document.getElementById('mode');
-  mode.textContent = s.mode === 'simulado' ? 'Modo de prueba' : 'Cobros reales';
-  mode.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');
+  mode.textContent = { simulado: 'Modo de prueba', 'auto-prueba': 'Prueba · pey pendiente' }[s.mode] || 'Cobros reales';
+  mode.className = 'badge ' + (s.mode === 'produccion' ? 'prod' : 'sim');
   const list = await (await fetch('/api/panel/jobs')).json();
   list.forEach(j => j.messages.length > 1 && jobs.set(j.id, j));
   renderAll();

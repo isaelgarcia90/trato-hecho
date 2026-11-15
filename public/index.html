@@ -242,7 +242,7 @@ $('reset').onclick = () => {
 
 fetch('/api/status').then(r => r.json()).then(s => {
   all = s.businesses; cats = s.categories || {}; modes = s.modes || {};
-  if (s.mode === 'simulado') $('mode').hidden = false;
+  if (s.mode === 'simulado' || s.mode === 'auto-prueba') $('mode').hidden = false;
   buildCats();
   render();
 });

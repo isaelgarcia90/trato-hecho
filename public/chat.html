@@ -134,7 +134,11 @@ function render(m) {
   } else b.append(m.text);
 
   if (m.kind === 'charge' && m.simulated) {
-    const note = el('div', 'sim-note', 'Modo de prueba: este cobro no llega a ningún banco.');
+    const why = {
+      pey: 'Cobro de prueba: pey aún no activa la cuenta CoDi. No llega a ningún banco.',
+      phone: 'Cobro de prueba: los cobros reales al celular solo van a números autorizados. Para pagar de verdad, usa el QR.',
+    }[m.testReason] || 'Modo de prueba: este cobro no llega a ningún banco.';
+    const note = el('div', 'sim-note', why);
     const btn = el('button', '', 'Simular que pagué');
     btn.onclick = async () => { btn.disabled = true; await fetch('/api/dev/simulate-payment/' + m.chargeId, { method: 'POST' }); };
     note.append(btn);
@@ -252,7 +256,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo();
 
 async function start() {
   const status = await (await fetch('/api/status')).json();
-  if (status.mode === 'simulado') { const m = document.getElementById('mode'); m.hidden = false; m.textContent = 'Prueba'; m.className = 'badge sim'; }
+  if (status.mode === 'simulado' || status.mode === 'auto-prueba') { const m = document.getElementById('mode'); m.hidden = false; m.textContent = 'Prueba'; m.className = 'badge sim'; }
 
   // ?n=<negocio> abre el chat de ese negocio; ?j=<id> retoma una conversación; ?nuevo empieza otra.
   const params = new URLSearchParams(location.search);
