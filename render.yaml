@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: chamba
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: PEY_API_KEY
+        sync: false
+      - key: PEY_WEBHOOK_SECRET
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
+      - key: DEMO_CHARGE_AMOUNT
+        value: "0.01"
+      - key: PANEL_PASSWORD
+        sync: false

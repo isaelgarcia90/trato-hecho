@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chamba · cotiza y cobra con CoDi</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="landing">
+    <span id="mode" class="badge">…</span>
+    <h1>Chamba</h1>
+    <p>Un agente que atiende por chat a los clientes de un plomero, electricista o cualquier oficio:
+      cotiza con los precios del negocio, agenda la cita y <b>cobra el anticipo con CoDi</b>, sin comisión
+      ni contracargos. En cuanto el banco confirma el pago, la cita queda apartada sola y el negocio lo ve en su panel.</p>
+    <div class="actions">
+      <a href="/chat">Abrir chat como cliente</a>
+      <a class="secondary" href="/panel">Ver panel del negocio</a>
+    </div>
+    <h3>Cómo probarlo</h3>
+    <ol>
+      <li>Abre el chat en tu celular y cuéntale tu problema (por ejemplo: "se tapó el baño").</li>
+      <li>Elige horario y deja tu celular de 10 dígitos.</li>
+      <li>Pide que te manden el cobro a tu app del banco, o paga con el QR.</li>
+      <li>Aprueba el pago en tu banco: el chat y el panel cambian a "pagado" en cuanto pey confirma.</li>
+      <li>Desde el panel, agrega un cargo extra y cobra el restante al terminar el trabajo.</li>
+    </ol>
+  </main>
+  <script>
+    fetch('/api/status').then(r => r.json()).then(s => {
+      const el = document.getElementById('mode');
+      el.textContent = s.mode === 'simulado' ? 'Modo simulado (sin API key de pey)' : 'Conectado a pey en producción';
+      el.className = 'badge ' + (s.mode === 'simulado' ? 'sim' : 'prod');
+    });
+  </script>
+</body>
+</html>

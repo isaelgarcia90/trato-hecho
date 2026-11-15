@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chat · Plomería Don Beto</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="phone">
+    <div class="chat-head">
+      <div class="avatar">DB</div>
+      <div><b id="biz">Plomería Don Beto</b><small>Asistente · responde al momento</small></div>
+      <span id="mode" class="badge"></span>
+    </div>
+    <div id="msgs" class="msgs" aria-live="polite"></div>
+    <form id="composer" class="composer">
+      <input id="input" autocomplete="off" placeholder="Escribe un mensaje" aria-label="Mensaje">
+      <button aria-label="Enviar">➤</button>
+    </form>
+  </div>
+<script>
+const $msgs = document.getElementById('msgs');
+const $input = document.getElementById('input');
+let job = null;
+let simulated = false;
+const seen = new Set();
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+
+function time(ts) {
+  return new Date(ts).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+function render(m) {
+  if (seen.has(m.id)) return;
+  seen.add(m.id);
+  const el = document.createElement('div');
+  el.className = 'msg ' + m.from + (m.kind === 'paid' ? ' paid' : '');
+  el.textContent = m.text;
+  if (m.qrDataUrl) {
+    const img = document.createElement('img');
+    img.className = 'qr'; img.src = m.qrDataUrl; img.alt = 'QR de cobro CoDi';
+    el.appendChild(img);
+  }
+  if (m.kind === 'charge' && m.simulated) {
+    const note = document.createElement('div');
+    note.className = 'sim-note';
+    note.textContent = 'Modo simulado: este cobro no llega a ningún banco. ';
+    const b = document.createElement('button');
+    b.textContent = 'Simular que pagué';
+    b.onclick = async () => { b.disabled = true; await fetch('/api/dev/simulate-payment/' + m.chargeId, { method: 'POST' }); };
+    note.appendChild(b);
+    el.appendChild(note);
+  }
+  if (m.buttons?.length) {
+    const box = document.createElement('div');
+    box.className = 'btns';
+    for (const btn of m.buttons) {
+      const b = document.createElement('button');
+      b.textContent = btn.label;
+      b.onclick = () => { box.querySelectorAll('button').forEach(x => x.disabled = true); send({ action: btn.action, text: btn.label }); };
+      box.appendChild(b);
+    }
+    el.appendChild(box);
+  }
+  const t = document.createElement('time');
+  t.textContent = time(m.at);
+  el.appendChild(t);
+  $msgs.appendChild(el);
+  $msgs.scrollTop = $msgs.scrollHeight;
+}
+
+async function send(body) {
+  const res = await fetch('/api/jobs/' + job.id + '/messages', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (data.messages) data.messages.forEach(render);
+}
+
+document.getElementById('composer').onsubmit = e => {
+  e.preventDefault();
+  const text = $input.value.trim();
+  if (!text || !job) return;
+  $input.value = '';
+  send({ text });
+};
+
+async function start() {
+  const status = await (await fetch('/api/status')).json();
+  simulated = status.mode === 'simulado';
+  document.getElementById('biz').textContent = status.business.name;
+  const mode = document.getElementById('mode');
+  if (simulated) { mode.textContent = 'simulado'; mode.className = 'badge sim'; }
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get('j') || (params.has('nuevo') ? null : store.get('chamba_job'));
+  if (id) {
+    const r = await fetch('/api/jobs/' + id);
+    if (r.ok) job = await r.json();
+  }
+  if (!job) job = await (await fetch('/api/jobs', { method: 'POST' })).json();
+  store.set('chamba_job', job.id);
+  history.replaceState(null, '', '/chat?j=' + job.id);
+  job.messages.forEach(render);
+
+  const es = new EventSource('/api/events?jobId=' + job.id);
+  es.onmessage = e => {
+    const evt = JSON.parse(e.data);
+    if (evt.type === 'message') render(evt.message);
+  };
+}
+start();
+</script>
+</body>
+</html>
